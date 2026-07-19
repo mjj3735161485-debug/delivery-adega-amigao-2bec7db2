@@ -16,10 +16,7 @@ export const Route = createFileRoute("/conta")({
   head: () => ({
     meta: [
       { title: "Entrar — Adega Amigão" },
-      {
-        name: "description",
-        content: "Entre na sua conta Adega Amigão para acompanhar pedidos e salvar seu endereço.",
-      },
+      { name: "description", content: "Entre na sua conta Adega Amigão para acompanhar pedidos e salvar seu endereço." },
       { property: "og:title", content: "Entrar — Adega Amigão" },
       { property: "og:description", content: "Login do cliente Adega Amigão." },
       { property: "og:url", content: "https://sip-n-serve-bot.lovable.app/conta" },
@@ -80,7 +77,10 @@ function CustomerAuthPage() {
     setAppleLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: window.location.origin + "/conta" + (safeNext ? `?next=${encodeURIComponent(safeNext)}` : ""),
+        redirect_uri:
+          window.location.origin +
+          "/conta" +
+          (safeNext ? `?next=${encodeURIComponent(safeNext)}` : ""),
       });
       if (result.error) {
         toast.error("Não foi possível entrar com Apple.");
@@ -111,10 +111,10 @@ function CustomerAuthPage() {
         goNext();
       } else {
         const { error } = await supabase.auth.signUp({
-          email: emailVal,
-          password: pwdVal,
+          email: emailVal, password: pwdVal,
           options: {
-            emailRedirectTo: window.location.origin + (safeNext || "/minha-conta"),
+            emailRedirectTo:
+              window.location.origin + (safeNext || "/minha-conta"),
           },
         });
         if (error) throw error;
@@ -138,11 +138,23 @@ function CustomerAuthPage() {
           </span>
           <div>
             <p className="font-display text-lg font-bold leading-none">Adega Amigão</p>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Sua conta</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Sua conta
+            </p>
           </div>
         </div>
-        <Button type="button" variant="outline" className="w-full mb-3" onClick={handleApple} disabled={appleLoading}>
-          {appleLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Apple className="h-4 w-4 mr-2" />}
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full mb-3"
+          onClick={handleApple}
+          disabled={appleLoading}
+        >
+          {appleLoading ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Apple className="h-4 w-4 mr-2" />
+          )}
           Continuar com Apple
         </Button>
         <div className="relative my-4">
@@ -156,50 +168,41 @@ function CustomerAuthPage() {
         <form onSubmit={submit} className="space-y-4">
           <div>
             <Label htmlFor="c-email">Email</Label>
-            <Input
-              id="c-email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <Input id="c-email" name="email" type="email" required autoComplete="email" value={email}
+              onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div>
             <Label htmlFor="c-pwd">Senha</Label>
-            <Input
-              id="c-pwd"
-              name="password"
-              type="password"
-              required
-              minLength={4}
+            <Input id="c-pwd" name="password" type="password" required minLength={4}
               autoComplete={mode === "signup" ? "new-password" : "current-password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+              value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {mode === "login" ? "Entrar" : "Criar conta"}
           </Button>
-          <button
-            type="button"
+          <button type="button"
             onClick={() => setMode(mode === "login" ? "signup" : "login")}
-            className="w-full text-xs text-muted-foreground hover:text-foreground"
-          >
+            className="w-full text-xs text-muted-foreground hover:text-foreground">
             {mode === "login" ? "Criar nova conta" : "Já tenho conta"}
           </button>
           {mode === "login" && (
-            <button type="button" onClick={forgotPassword} className="w-full text-xs text-primary hover:underline">
+            <button
+              type="button"
+              onClick={forgotPassword}
+              className="w-full text-xs text-primary hover:underline"
+            >
               Esqueci minha senha
             </button>
           )}
         </form>
         <div className="mt-6 pt-4 border-t border-border text-center">
           <p className="text-xs text-muted-foreground mb-2">Equipe da loja?</p>
-          <Link to="/auth" className="text-xs text-primary hover:underline font-medium">
-            Acessar painel Funcionários →
+          <Link
+            to="/auth"
+            className="text-xs text-primary hover:underline font-medium"
+          >
+            Acessar painel admin/motoboy →
           </Link>
         </div>
       </div>
