@@ -7,6 +7,7 @@ export type NotifyOrderInput = {
   endereco: string;
   telefone: string;
   tempo?: string;
+  mensagem?: string;
 };
 
 export const notifyOrder = createServerFn({ method: "POST" })
@@ -32,6 +33,7 @@ export const notifyOrder = createServerFn({ method: "POST" })
           endereco: data.endereco,
           valor: data.valor,
           itens: data.itens,
+          mensagem: data.mensagem,
         }),
       });
       const text = await res.text();
