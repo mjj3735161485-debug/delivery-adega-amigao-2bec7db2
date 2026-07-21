@@ -141,11 +141,13 @@ function ExportarPage() {
     setLoadingId(c.id + ":csv");
     try {
       const rows = await fetchDeliveries(c.id);
-      const header = ["Numero", "Data/Hora", "Cliente", "Bairro", "Tipo", "Pagamento", "Taxa", "Total"];
+      const header = ["Numero", "Data/Hora", "Cliente", "Bairro", "Tipo", "Pagamento", "Taxa", "Total", "Dinheiro", "Dinheiro recebido", "Troco", "Pix", "Cartao"];
       const lines = [header.join(";")];
       let taxaTotal = 0;
       for (const r of rows) {
         taxaTotal += Number(r.taxa_entrega || 0);
+        const s = splitPayment(r);
+        const fmt = (n: number) => n > 0 ? n.toFixed(2).replace(".", ",") : "";
         lines.push([
           r.numero,
           new Date(r.delivered_at).toLocaleString("pt-BR"),
@@ -155,9 +157,21 @@ function ExportarPage() {
           r.pagamento,
           Number(r.taxa_entrega || 0).toFixed(2).replace(".", ","),
           Number(r.total || 0).toFixed(2).replace(".", ","),
+          fmt(s.dinheiro),
+          fmt(s.dinheiroRecebido),
+          fmt(s.troco),
+          fmt(s.pix),
+          fmt(s.cartao),
         ].join(";"));
       }
       const comissao = (taxaTotal * Number(c.comissao_percent || 0)) / 100;
+      const tot = totalsByMethod(rows);
+      lines.push("");
+      lines.push("RESUMO POR FORMA DE PAGAMENTO");
+      lines.push(`Total Dinheiro;${tot.dinheiro.toFixed(2).replace(".", ",")}`);
+      lines.push(`Total Pix;${tot.pix.toFixed(2).replace(".", ",")}`);
+      lines.push(`Total Cartao;${tot.cartao.toFixed(2).replace(".", ",")}`);
+      lines.push(`Total Troco entregue;${tot.troco.toFixed(2).replace(".", ",")}`);
       lines.push("");
       lines.push(`Total taxas;${taxaTotal.toFixed(2).replace(".", ",")}`);
       lines.push(`Comissao (${c.comissao_percent}%);${comissao.toFixed(2).replace(".", ",")}`);
