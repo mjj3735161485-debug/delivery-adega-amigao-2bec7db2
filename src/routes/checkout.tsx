@@ -437,36 +437,38 @@ function Checkout() {
       if (error) throw error;
       const order = rpcData as { numero: number; token: string };
 
-      // Mensagem WhatsApp
+      // Mensagem WhatsApp (formato solicitado pela loja)
+      const bairroUp = (detected?.bairro ?? "").toUpperCase();
       const linhas = [
-        `*Novo pedido #${order.numero}* ${isPickup ? "🏪 RETIRADA" : "🛵 ENTREGA"}`,
+        `Novo pedido #${order.numero} ${isPickup ? "🏪 RETIRADA" : "🛵 ENTREGA"}`,
         "",
-        ...items.map((i) => `• ${i.quantidade}x ${i.nome} — ${brl(i.preco * i.quantidade)}`),
+        ...items.map((i) => `* ${i.quantidade}x ${i.nome} — ${brl(i.preco * i.quantidade)}`),
         "",
         `Subtotal: ${brl(subtotal)}`,
-        isPickup ? `Retirada na loja: sem taxa` : `Entrega (${detected?.bairro}): ${brl(taxa)}`,
-        `*Total: ${brl(total)}*`,
+        isPickup ? `Retirada na loja: sem taxa` : `Entrega (${bairroUp}): ${brl(taxa)}`,
+        `Total: ${brl(total)}`,
         "",
         `👤 ${parsed.data.cliente_nome}`,
         `📱 ${formatPhoneBR(parsed.data.cliente_telefone)}`,
         isPickup
           ? `🏪 Retirar na loja`
-          : `📍 ${(parsed.data as z.infer<typeof deliverySchema>).endereco} — ${detected?.bairro}`,
+          : `📍 ${(parsed.data as z.infer<typeof deliverySchema>).endereco} — ${bairroUp}`,
         ...(pag === "Misto"
           ? [
               `${mistoMetodo === "Pix" ? "🅿️" : "💳"} ${mistoMetodo}: ${brl(valorCartao)}`,
-              `💵 Dinheiro: ${brl(valorDinheiro)}${trocoPara > 0 ? ` (troco p/ ${brl(trocoPara)} = *${brl(troco)}*)` : ""}`,
+              `💵 Dinheiro: ${brl(valorDinheiro)}${trocoPara > 0 ? ` — troco p/ ${brl(trocoPara)} = ${brl(troco)}` : ""}`,
             ]
           : [
               `💳 ${pag}${
                 pag === "Dinheiro" && trocoPara > 0
-                  ? ` — troco p/ ${brl(trocoPara)} = *${brl(troco)}*`
+                  ? ` — troco p/ ${brl(trocoPara)} = ${brl(troco)}`
                   : ""
               }`,
             ]),
         ...(parsed.data.observacoes ? [`📝 ${parsed.data.observacoes}`] : []),
       ];
-      const wa = `https://wa.me/${settings?.whatsapp ?? ""}?text=${encodeURIComponent(linhas.join("\n"))}`;
+      const mensagem = linhas.join("\n");
+      const wa = `https://wa.me/${settings?.whatsapp ?? ""}?text=${encodeURIComponent(mensagem)}`;
       window.open(wa, "_blank");
 
       // Notifica a API WhatsApp externa (POST ${API_URL}/pedido)
@@ -485,6 +487,7 @@ function Checkout() {
               quantidade: i.quantidade,
               preco: i.preco,
             })),
+            mensagem,
           },
         });
         if (result.ok) {
