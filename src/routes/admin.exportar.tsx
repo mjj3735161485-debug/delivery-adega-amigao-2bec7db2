@@ -39,7 +39,69 @@ type Entrega = {
   pagamento: string;
   delivered_at: string;
   tipo_entrega: string;
+  subtotal?: number;
+  troco_para?: number | null;
+  observacoes?: string | null;
 };
+
+// Divide o total de um pedido entre Dinheiro / Pix / Cartão.
+// Para "Misto" tenta extrair "Cartão R$X" ou "Pix R$X" das observações;
+// o restante é dinheiro (e o troco é calculado como dinheiro_recebido - dinheiro).
+function splitPayment(r: Entrega) {
+  const total = Number(r.total || 0);
+  const pag = (r.pagamento || "").toLowerCase();
+  const out = { dinheiro: 0, pix: 0, cartao: 0, dinheiroRecebido: 0, troco: 0 };
+  const troco = Number(r.troco_para || 0);
+  if (pag === "dinheiro") {
+    out.dinheiro = total;
+    out.dinheiroRecebido = troco > 0 ? troco : total;
+    out.troco = troco > 0 ? Math.max(0, troco - total) : 0;
+    return out;
+  }
+  if (pag === "pix") { out.pix = total; return out; }
+  if (pag === "cartão" || pag === "cartao") { out.cartao = total; return out; }
+  if (pag === "misto") {
+    const obs = r.observacoes || "";
+    const num = (re: RegExp) => {
+      const m = obs.match(re);
+      if (!m) return 0;
+      return Number(m[1].replace(/\./g, "").replace(",", ".")) || 0;
+    };
+    const cartao = num(/cart(?:ã|a)o[^0-9]*R?\$?\s*([\d.,]+)/i);
+    const pix = num(/pix[^0-9]*R?\$?\s*([\d.,]+)/i);
+    const dinheiro = num(/dinheiro[^0-9]*R?\$?\s*([\d.,]+)/i);
+    const soma = cartao + pix + dinheiro;
+    if (soma > 0) {
+      out.cartao = cartao;
+      out.pix = pix;
+      out.dinheiro = dinheiro || Math.max(0, total - cartao - pix);
+    } else {
+      // fallback: sem detalhe → considera tudo como dinheiro
+      out.dinheiro = total;
+    }
+    if (troco > 0 && out.dinheiro > 0) {
+      out.dinheiroRecebido = troco;
+      out.troco = Math.max(0, troco - out.dinheiro);
+    }
+    return out;
+  }
+  // desconhecido: joga em dinheiro
+  out.dinheiro = total;
+  return out;
+}
+
+function totalsByMethod(rows: Entrega[]) {
+  const t = { dinheiro: 0, pix: 0, cartao: 0, troco: 0, entregasDinheiro: 0 };
+  for (const r of rows) {
+    const s = splitPayment(r);
+    t.dinheiro += s.dinheiro;
+    t.pix += s.pix;
+    t.cartao += s.cartao;
+    t.troco += s.troco;
+    if (s.dinheiro > 0) t.entregasDinheiro += 1;
+  }
+  return t;
+}
 
 function todayISO() {
   const d = new Date();
