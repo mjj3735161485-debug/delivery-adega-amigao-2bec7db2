@@ -7,6 +7,7 @@ import { useAdminGuard } from "@/lib/useAdminGuard";
 import { AdminNav } from "@/components/AdminNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/PasswordInput";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -250,12 +251,12 @@ function AdminConfig() {
               <div className="space-y-3">
                 <div>
                   <Label htmlFor="new-pwd">Nova senha</Label>
-                  <Input id="new-pwd" type="password" value={newPwd}
+                  <PasswordInput id="new-pwd" value={newPwd}
                     onChange={(e) => setNewPwd(e.target.value)} />
                 </div>
                 <div>
                   <Label htmlFor="confirm-pwd">Confirmar nova senha</Label>
-                  <Input id="confirm-pwd" type="password" value={confirmPwd}
+                  <PasswordInput id="confirm-pwd" value={confirmPwd}
                     onChange={(e) => setConfirmPwd(e.target.value)} />
                 </div>
                 <div className="flex justify-end gap-2">

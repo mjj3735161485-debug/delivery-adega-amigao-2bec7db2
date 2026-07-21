@@ -4,6 +4,7 @@ import { Loader2, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/PasswordInput";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
@@ -64,12 +65,12 @@ function ResetPasswordPage() {
         <form onSubmit={submit} className="space-y-4">
           <div>
             <Label htmlFor="pwd">Nova senha</Label>
-            <Input id="pwd" type="password" required minLength={4} autoComplete="new-password"
+            <PasswordInput id="pwd" required minLength={4} autoComplete="new-password"
               value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <div>
             <Label htmlFor="pwd2">Confirmar senha</Label>
-            <Input id="pwd2" type="password" required minLength={4} autoComplete="new-password"
+            <PasswordInput id="pwd2" required minLength={4} autoComplete="new-password"
               value={confirm} onChange={(e) => setConfirm(e.target.value)} />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
