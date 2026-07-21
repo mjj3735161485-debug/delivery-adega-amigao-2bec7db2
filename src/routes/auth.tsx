@@ -4,6 +4,7 @@ import { Wine, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/PasswordInput";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
@@ -198,7 +199,7 @@ function AuthPage() {
           </div>
           <div>
             <Label htmlFor="pwd">Senha</Label>
-            <Input id="pwd" name="password" type="password" required minLength={4}
+            <PasswordInput id="pwd" name="password" required minLength={4}
               autoComplete={mode === "signup" ? "new-password" : "current-password"}
               value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
