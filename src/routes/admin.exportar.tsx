@@ -39,7 +39,69 @@ type Entrega = {
   pagamento: string;
   delivered_at: string;
   tipo_entrega: string;
+  subtotal?: number;
+  troco_para?: number | null;
+  observacoes?: string | null;
 };
+
+// Divide o total de um pedido entre Dinheiro / Pix / Cartão.
+// Para "Misto" tenta extrair "Cartão R$X" ou "Pix R$X" das observações;
+// o restante é dinheiro (e o troco é calculado como dinheiro_recebido - dinheiro).
+function splitPayment(r: Entrega) {
+  const total = Number(r.total || 0);
+  const pag = (r.pagamento || "").toLowerCase();
+  const out = { dinheiro: 0, pix: 0, cartao: 0, dinheiroRecebido: 0, troco: 0 };
+  const troco = Number(r.troco_para || 0);
+  if (pag === "dinheiro") {
+    out.dinheiro = total;
+    out.dinheiroRecebido = troco > 0 ? troco : total;
+    out.troco = troco > 0 ? Math.max(0, troco - total) : 0;
+    return out;
+  }
+  if (pag === "pix") { out.pix = total; return out; }
+  if (pag === "cartão" || pag === "cartao") { out.cartao = total; return out; }
+  if (pag === "misto") {
+    const obs = r.observacoes || "";
+    const num = (re: RegExp) => {
+      const m = obs.match(re);
+      if (!m) return 0;
+      return Number(m[1].replace(/\./g, "").replace(",", ".")) || 0;
+    };
+    const cartao = num(/cart(?:ã|a)o[^0-9]*R?\$?\s*([\d.,]+)/i);
+    const pix = num(/pix[^0-9]*R?\$?\s*([\d.,]+)/i);
+    const dinheiro = num(/dinheiro[^0-9]*R?\$?\s*([\d.,]+)/i);
+    const soma = cartao + pix + dinheiro;
+    if (soma > 0) {
+      out.cartao = cartao;
+      out.pix = pix;
+      out.dinheiro = dinheiro || Math.max(0, total - cartao - pix);
+    } else {
+      // fallback: sem detalhe → considera tudo como dinheiro
+      out.dinheiro = total;
+    }
+    if (troco > 0 && out.dinheiro > 0) {
+      out.dinheiroRecebido = troco;
+      out.troco = Math.max(0, troco - out.dinheiro);
+    }
+    return out;
+  }
+  // desconhecido: joga em dinheiro
+  out.dinheiro = total;
+  return out;
+}
+
+function totalsByMethod(rows: Entrega[]) {
+  const t = { dinheiro: 0, pix: 0, cartao: 0, troco: 0, entregasDinheiro: 0 };
+  for (const r of rows) {
+    const s = splitPayment(r);
+    t.dinheiro += s.dinheiro;
+    t.pix += s.pix;
+    t.cartao += s.cartao;
+    t.troco += s.troco;
+    if (s.dinheiro > 0) t.entregasDinheiro += 1;
+  }
+  return t;
+}
 
 function todayISO() {
   const d = new Date();
@@ -79,11 +141,13 @@ function ExportarPage() {
     setLoadingId(c.id + ":csv");
     try {
       const rows = await fetchDeliveries(c.id);
-      const header = ["Numero", "Data/Hora", "Cliente", "Bairro", "Tipo", "Pagamento", "Taxa", "Total"];
+      const header = ["Numero", "Data/Hora", "Cliente", "Bairro", "Tipo", "Pagamento", "Taxa", "Total", "Dinheiro", "Dinheiro recebido", "Troco", "Pix", "Cartao"];
       const lines = [header.join(";")];
       let taxaTotal = 0;
       for (const r of rows) {
         taxaTotal += Number(r.taxa_entrega || 0);
+        const s = splitPayment(r);
+        const fmt = (n: number) => n > 0 ? n.toFixed(2).replace(".", ",") : "";
         lines.push([
           r.numero,
           new Date(r.delivered_at).toLocaleString("pt-BR"),
@@ -93,9 +157,21 @@ function ExportarPage() {
           r.pagamento,
           Number(r.taxa_entrega || 0).toFixed(2).replace(".", ","),
           Number(r.total || 0).toFixed(2).replace(".", ","),
+          fmt(s.dinheiro),
+          fmt(s.dinheiroRecebido),
+          fmt(s.troco),
+          fmt(s.pix),
+          fmt(s.cartao),
         ].join(";"));
       }
       const comissao = (taxaTotal * Number(c.comissao_percent || 0)) / 100;
+      const tot = totalsByMethod(rows);
+      lines.push("");
+      lines.push("RESUMO POR FORMA DE PAGAMENTO");
+      lines.push(`Total Dinheiro;${tot.dinheiro.toFixed(2).replace(".", ",")}`);
+      lines.push(`Total Pix;${tot.pix.toFixed(2).replace(".", ",")}`);
+      lines.push(`Total Cartao;${tot.cartao.toFixed(2).replace(".", ",")}`);
+      lines.push(`Total Troco entregue;${tot.troco.toFixed(2).replace(".", ",")}`);
       lines.push("");
       lines.push(`Total taxas;${taxaTotal.toFixed(2).replace(".", ",")}`);
       lines.push(`Comissao (${c.comissao_percent}%);${comissao.toFixed(2).replace(".", ",")}`);
@@ -128,29 +204,53 @@ function ExportarPage() {
 
       autoTable(doc, {
         startY: 30,
-        head: [["#", "Quando", "Cliente", "Bairro", "Tipo", "Pgto", "Taxa", "Total"]],
-        body: rows.map(r => [
-          r.numero,
-          new Date(r.delivered_at).toLocaleString("pt-BR"),
-          r.cliente_nome ?? "",
-          r.bairro ?? "—",
-          r.tipo_entrega,
-          r.pagamento,
-          brl(Number(r.taxa_entrega || 0)),
-          brl(Number(r.total || 0)),
-        ]),
+        head: [["#", "Quando", "Cliente", "Bairro", "Pgto", "Total", "Dinheiro", "Recebido", "Troco", "Pix", "Cartão"]],
+        body: rows.map(r => {
+          const s = splitPayment(r);
+          const fmt = (n: number) => n > 0 ? brl(n) : "—";
+          return [
+            r.numero,
+            new Date(r.delivered_at).toLocaleString("pt-BR"),
+            r.cliente_nome ?? "",
+            r.bairro ?? "—",
+            r.pagamento,
+            brl(Number(r.total || 0)),
+            fmt(s.dinheiro),
+            fmt(s.dinheiroRecebido),
+            fmt(s.troco),
+            fmt(s.pix),
+            fmt(s.cartao),
+          ];
+        }),
         styles: { fontSize: 8 },
         headStyles: { fillColor: [30, 30, 30] },
       });
 
       const finalY = (doc as any).lastAutoTable.finalY + 8;
+      const tot = totalsByMethod(rows);
+      doc.setFontSize(12);
+      doc.text("Resumo por forma de pagamento", 14, finalY);
+      autoTable(doc, {
+        startY: finalY + 3,
+        head: [["Forma", "Valor"]],
+        body: [
+          ["Dinheiro", brl(tot.dinheiro)],
+          ["Pix", brl(tot.pix)],
+          ["Cartão", brl(tot.cartao)],
+          ["Troco entregue", brl(tot.troco)],
+        ],
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [30, 30, 30] },
+        theme: "grid",
+      });
+      const y2 = (doc as any).lastAutoTable.finalY + 8;
       doc.setFontSize(11);
-      doc.text(`Entregas: ${rows.length}   ·   Dias trabalhados: ${dias}`, 14, finalY);
-      doc.text(`Total taxas: ${brl(taxaTotal)}`, 14, finalY + 6);
-      doc.text(`Comissão (${c.comissao_percent}%): ${brl(comissao)}`, 14, finalY + 12);
-      doc.text(`Diária (${dias} dia${dias > 1 ? "s" : ""}): ${brl(diariaTotal)}`, 14, finalY + 18);
+      doc.text(`Entregas: ${rows.length}   ·   Dias trabalhados: ${dias}`, 14, y2);
+      doc.text(`Total taxas: ${brl(taxaTotal)}`, 14, y2 + 6);
+      doc.text(`Comissão (${c.comissao_percent}%): ${brl(comissao)}`, 14, y2 + 12);
+      doc.text(`Diária (${dias} dia${dias > 1 ? "s" : ""}): ${brl(diariaTotal)}`, 14, y2 + 18);
       doc.setFontSize(13);
-      doc.text(`Total a pagar: ${brl(comissao + diariaTotal)}`, 14, finalY + 28);
+      doc.text(`Total a pagar: ${brl(comissao + diariaTotal)}`, 14, y2 + 28);
 
       doc.save(`fechamento_${slug(c.nome)}_${from}_${to}.pdf`);
       toast.success(`PDF gerado (${rows.length} entregas)`);
