@@ -204,29 +204,53 @@ function ExportarPage() {
 
       autoTable(doc, {
         startY: 30,
-        head: [["#", "Quando", "Cliente", "Bairro", "Tipo", "Pgto", "Taxa", "Total"]],
-        body: rows.map(r => [
-          r.numero,
-          new Date(r.delivered_at).toLocaleString("pt-BR"),
-          r.cliente_nome ?? "",
-          r.bairro ?? "—",
-          r.tipo_entrega,
-          r.pagamento,
-          brl(Number(r.taxa_entrega || 0)),
-          brl(Number(r.total || 0)),
-        ]),
+        head: [["#", "Quando", "Cliente", "Bairro", "Pgto", "Total", "Dinheiro", "Recebido", "Troco", "Pix", "Cartão"]],
+        body: rows.map(r => {
+          const s = splitPayment(r);
+          const fmt = (n: number) => n > 0 ? brl(n) : "—";
+          return [
+            r.numero,
+            new Date(r.delivered_at).toLocaleString("pt-BR"),
+            r.cliente_nome ?? "",
+            r.bairro ?? "—",
+            r.pagamento,
+            brl(Number(r.total || 0)),
+            fmt(s.dinheiro),
+            fmt(s.dinheiroRecebido),
+            fmt(s.troco),
+            fmt(s.pix),
+            fmt(s.cartao),
+          ];
+        }),
         styles: { fontSize: 8 },
         headStyles: { fillColor: [30, 30, 30] },
       });
 
       const finalY = (doc as any).lastAutoTable.finalY + 8;
+      const tot = totalsByMethod(rows);
+      doc.setFontSize(12);
+      doc.text("Resumo por forma de pagamento", 14, finalY);
+      autoTable(doc, {
+        startY: finalY + 3,
+        head: [["Forma", "Valor"]],
+        body: [
+          ["Dinheiro", brl(tot.dinheiro)],
+          ["Pix", brl(tot.pix)],
+          ["Cartão", brl(tot.cartao)],
+          ["Troco entregue", brl(tot.troco)],
+        ],
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [30, 30, 30] },
+        theme: "grid",
+      });
+      const y2 = (doc as any).lastAutoTable.finalY + 8;
       doc.setFontSize(11);
-      doc.text(`Entregas: ${rows.length}   ·   Dias trabalhados: ${dias}`, 14, finalY);
-      doc.text(`Total taxas: ${brl(taxaTotal)}`, 14, finalY + 6);
-      doc.text(`Comissão (${c.comissao_percent}%): ${brl(comissao)}`, 14, finalY + 12);
-      doc.text(`Diária (${dias} dia${dias > 1 ? "s" : ""}): ${brl(diariaTotal)}`, 14, finalY + 18);
+      doc.text(`Entregas: ${rows.length}   ·   Dias trabalhados: ${dias}`, 14, y2);
+      doc.text(`Total taxas: ${brl(taxaTotal)}`, 14, y2 + 6);
+      doc.text(`Comissão (${c.comissao_percent}%): ${brl(comissao)}`, 14, y2 + 12);
+      doc.text(`Diária (${dias} dia${dias > 1 ? "s" : ""}): ${brl(diariaTotal)}`, 14, y2 + 18);
       doc.setFontSize(13);
-      doc.text(`Total a pagar: ${brl(comissao + diariaTotal)}`, 14, finalY + 28);
+      doc.text(`Total a pagar: ${brl(comissao + diariaTotal)}`, 14, y2 + 28);
 
       doc.save(`fechamento_${slug(c.nome)}_${from}_${to}.pdf`);
       toast.success(`PDF gerado (${rows.length} entregas)`);
