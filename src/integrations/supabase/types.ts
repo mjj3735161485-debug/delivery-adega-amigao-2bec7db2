@@ -384,6 +384,7 @@ export type Database = {
           destaque: boolean
           disponivel: boolean
           estoque: number | null
+          estoque_alerta_min: number | null
           id: string
           imagem_url: string | null
           nome: string
@@ -398,6 +399,7 @@ export type Database = {
           destaque?: boolean
           disponivel?: boolean
           estoque?: number | null
+          estoque_alerta_min?: number | null
           id?: string
           imagem_url?: string | null
           nome: string
@@ -412,6 +414,7 @@ export type Database = {
           destaque?: boolean
           disponivel?: boolean
           estoque?: number | null
+          estoque_alerta_min?: number | null
           id?: string
           imagem_url?: string | null
           nome?: string
@@ -425,6 +428,50 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          delta: number
+          estoque_antes: number | null
+          estoque_depois: number | null
+          id: string
+          motivo: string | null
+          product_id: string
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          delta: number
+          estoque_antes?: number | null
+          estoque_depois?: number | null
+          id?: string
+          motivo?: string | null
+          product_id: string
+          tipo: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          delta?: number
+          estoque_antes?: number | null
+          estoque_depois?: number | null
+          id?: string
+          motivo?: string | null
+          product_id?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -496,6 +543,15 @@ export type Database = {
     Functions: {
       _norm_bairro: { Args: { _s: string }; Returns: string }
       accept_order: { Args: { _numero: number }; Returns: Json }
+      adjust_stock: {
+        Args: {
+          _motivo: string
+          _product_id: string
+          _quantidade: number
+          _tipo: string
+        }
+        Returns: Json
+      }
       admin_courier_deliveries_range: {
         Args: { _courier_id: string; _from: string; _to: string }
         Returns: Json
@@ -518,6 +574,10 @@ export type Database = {
         Returns: Json
       }
       auto_advance_pickup_orders: { Args: { _minutes?: number }; Returns: Json }
+      bulk_adjust_stock: {
+        Args: { _items: Json; _motivo: string }
+        Returns: Json
+      }
       cancel_order_by_customer: {
         Args: { _numero: number; _token: string }
         Returns: Json
@@ -547,6 +607,11 @@ export type Database = {
         Returns: boolean
       }
       is_store_open: { Args: never; Returns: Json }
+      list_low_stock: { Args: { _default_min?: number }; Returns: Json }
+      list_stock_movements: {
+        Args: { _limit?: number; _product_id: string }
+        Returns: Json
+      }
       mark_delivered: { Args: { _numero: number }; Returns: Json }
       match_delivery_fee: { Args: { _candidates: string[] }; Returns: Json }
       min_delivery_fee: { Args: never; Returns: number }
