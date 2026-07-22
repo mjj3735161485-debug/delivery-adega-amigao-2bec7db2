@@ -40,6 +40,7 @@ type Product = {
   disponivel: boolean;
   destaque: boolean;
   ordem: number;
+  estoque: number | null;
 };
 
 type FormState = {
@@ -51,11 +52,12 @@ type FormState = {
   category_id: string;
   disponivel: boolean;
   destaque: boolean;
+  estoque: string;
 };
 
 const empty: FormState = {
   nome: "", descricao: "", preco: "", imagem_url: "",
-  category_id: "", disponivel: true, destaque: false,
+  category_id: "", disponivel: true, destaque: false, estoque: "",
 };
 
 function normalizeSearch(s: string) {
@@ -99,6 +101,7 @@ function AdminProdutos() {
       id: p.id, nome: p.nome, descricao: p.descricao ?? "",
       preco: String(p.preco), imagem_url: p.imagem_url ?? "",
       category_id: p.category_id ?? "", disponivel: p.disponivel, destaque: p.destaque,
+      estoque: p.estoque == null ? "" : String(p.estoque),
     });
     setOpen(true);
   }
@@ -146,6 +149,7 @@ function AdminProdutos() {
       category_id: form.category_id || null,
       disponivel: form.disponivel,
       destaque: form.destaque,
+      estoque: form.estoque.trim() === "" ? null : Math.max(0, Math.floor(Number(form.estoque))),
     };
     const { error } = form.id
       ? await supabase.from("products").update(payload).eq("id", form.id)
