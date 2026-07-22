@@ -58,6 +58,10 @@ const empty: FormState = {
   category_id: "", disponivel: true, destaque: false,
 };
 
+function normalizeSearch(s: string) {
+  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
 function AdminProdutos() {
   const { ready, isAdmin } = useAdminGuard();
   const qc = useQueryClient();
