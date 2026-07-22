@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Pencil, Star, StarOff, Eye, EyeOff } from "lucide-react";
+import { Plus, Trash2, Pencil, Star, StarOff, Eye, EyeOff, Upload, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGuard } from "@/lib/useAdminGuard";
 import { AdminNav } from "@/components/AdminNav";
@@ -63,6 +63,7 @@ function AdminProdutos() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(empty);
+  const [uploading, setUploading] = useState(false);
 
   const { data: categories = [] } = useQuery({
     queryKey: ["admin", "categories"],
@@ -97,6 +98,36 @@ function AdminProdutos() {
     setOpen(true);
   }
   function novo() { setForm(empty); setOpen(true); }
+
+  async function handleUpload(file: File) {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione um arquivo de imagem");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máx 5MB)");
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("product-images")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) throw upErr;
+      const { data, error: urlErr } = await supabase.storage
+        .from("product-images")
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      if (urlErr) throw urlErr;
+      setForm((f) => ({ ...f, imagem_url: data.signedUrl }));
+      toast.success("Imagem carregada");
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha ao enviar imagem");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function save() {
     if (!form.nome.trim() || !form.preco) {
@@ -226,8 +257,31 @@ function AdminProdutos() {
             </div>
             <div>
               <Label>URL da imagem</Label>
-              <Input placeholder="https://..." value={form.imagem_url}
-                onChange={(e) => setForm({ ...form, imagem_url: e.target.value })} />
+              <div className="flex gap-2">
+                <Input placeholder="https://... ou carregue abaixo" value={form.imagem_url}
+                  onChange={(e) => setForm({ ...form, imagem_url: e.target.value })} />
+                <Button type="button" variant="outline" disabled={uploading}
+                  onClick={() => document.getElementById("product-image-file")?.click()}>
+                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                  <span className="ml-1">Carregar</span>
+                </Button>
+                <input
+                  id="product-image-file"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleUpload(f);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+              {form.imagem_url && (
+                <div className="mt-2 h-24 w-24 rounded-lg overflow-hidden bg-muted">
+                  <img src={form.imagem_url} alt="Prévia" className="h-full w-full object-cover" />
+                </div>
+              )}
             </div>
             <div className="flex gap-4 text-sm">
               <label className="flex items-center gap-2">
