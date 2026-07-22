@@ -248,7 +248,7 @@ function AdminProdutos() {
         product_id, tipo: bulkTipo, quantidade: qty,
       }));
       const { error } = await supabase.rpc("bulk_adjust_stock", {
-        _items: items as any, _motivo: bulkMotivo || null,
+        _items: items as any, _motivo: bulkMotivo || "",
       });
       if (error) throw error;
       toast.success(`${selected.size} produto(s) atualizados`);
