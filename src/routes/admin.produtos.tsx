@@ -201,7 +201,7 @@ function AdminProdutos() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {products.map((p) => {
+          {filtered.map((p) => {
             const cat = categories.find((c) => c.id === p.category_id);
             return (
               <article key={p.id} className="rounded-xl bg-card border border-border p-3 flex gap-3">
