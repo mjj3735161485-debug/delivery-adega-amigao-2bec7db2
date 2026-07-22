@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Pencil, Star, StarOff, Eye, EyeOff, Upload, Loader2 } from "lucide-react";
+import { Plus, Trash2, Pencil, Star, StarOff, Eye, EyeOff, Upload, Loader2, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGuard } from "@/lib/useAdminGuard";
 import { AdminNav } from "@/components/AdminNav";
@@ -58,12 +58,17 @@ const empty: FormState = {
   category_id: "", disponivel: true, destaque: false,
 };
 
+function normalizeSearch(s: string) {
+  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
 function AdminProdutos() {
   const { ready, isAdmin } = useAdminGuard();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(empty);
   const [uploading, setUploading] = useState(false);
+  const [search, setSearch] = useState("");
 
   const { data: categories = [] } = useQuery({
     queryKey: ["admin", "categories"],
@@ -174,17 +179,29 @@ function AdminProdutos() {
   if (!ready) return <div className="p-8 text-muted-foreground">Carregando...</div>;
   if (!isAdmin) return <div className="p-8 text-center">Sem permissão de admin.</div>;
 
+  const filtered = products.filter((p) =>
+    normalizeSearch(p.nome).includes(normalizeSearch(search))
+  );
+
   return (
     <div className="min-h-screen">
       <AdminNav title="Produtos" />
       <main className="mx-auto max-w-6xl px-4 py-6">
-        <div className="flex justify-between items-center mb-4">
-          <p className="text-sm text-muted-foreground">{products.length} produtos</p>
-          <Button onClick={novo}><Plus className="h-4 w-4 mr-1" /> Novo produto</Button>
+        <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center mb-4">
+          <p className="text-sm text-muted-foreground">{filtered.length} de {products.length} produtos</p>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Input
+              placeholder="Buscar produto..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full sm:w-64"
+            />
+            <Button onClick={novo}><Plus className="h-4 w-4 mr-1" /> Novo produto</Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {products.map((p) => {
+          {filtered.map((p) => {
             const cat = categories.find((c) => c.id === p.category_id);
             return (
               <article key={p.id} className="rounded-xl bg-card border border-border p-3 flex gap-3">
