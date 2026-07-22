@@ -5,6 +5,7 @@ import { Plus, Trash2, Pencil, Star, StarOff, Eye, EyeOff, Upload, Loader2, Sear
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGuard } from "@/lib/useAdminGuard";
 import { AdminNav } from "@/components/AdminNav";
+import { norm } from "@/lib/classify-score";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
