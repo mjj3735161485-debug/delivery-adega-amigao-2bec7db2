@@ -219,6 +219,11 @@ function AdminProdutos() {
                     <div className="min-w-0">
                       <p className="font-medium truncate">{p.nome}</p>
                       <p className="text-xs text-muted-foreground">{cat?.nome ?? "sem categoria"}</p>
+                      {p.estoque != null && (
+                        <p className={`text-xs mt-0.5 font-medium ${p.estoque <= 0 ? "text-destructive" : p.estoque <= 5 ? "text-amber-500" : "text-emerald-500"}`}>
+                          {p.estoque <= 0 ? "Sem estoque" : `Estoque: ${p.estoque}`}
+                        </p>
+                      )}
                     </div>
                     <p className="font-display font-bold text-primary">{brl(Number(p.preco))}</p>
                   </div>
@@ -270,6 +275,18 @@ function AdminProdutos() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div>
+              <Label>Estoque (unidades)</Label>
+              <Input
+                inputMode="numeric"
+                placeholder="Deixe vazio para não controlar"
+                value={form.estoque}
+                onChange={(e) => setForm({ ...form, estoque: e.target.value.replace(/[^\d]/g, "") })}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Ao chegar em 0, o produto é desativado. Ao adicionar unidades, volta a ficar disponível.
+              </p>
             </div>
             <div>
               <Label>Descrição</Label>
