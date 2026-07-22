@@ -64,6 +64,7 @@ function AdminProdutos() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(empty);
   const [uploading, setUploading] = useState(false);
+  const [search, setSearch] = useState("");
 
   const { data: categories = [] } = useQuery({
     queryKey: ["admin", "categories"],
