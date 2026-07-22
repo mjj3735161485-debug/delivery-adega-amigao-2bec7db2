@@ -175,6 +175,10 @@ function AdminProdutos() {
   if (!ready) return <div className="p-8 text-muted-foreground">Carregando...</div>;
   if (!isAdmin) return <div className="p-8 text-center">Sem permissão de admin.</div>;
 
+  const filtered = products.filter((p) =>
+    norm(p.nome).includes(norm(search))
+  );
+
   return (
     <div className="min-h-screen">
       <AdminNav title="Produtos" />
