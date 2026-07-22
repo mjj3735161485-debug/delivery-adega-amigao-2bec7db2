@@ -179,9 +179,17 @@ function AdminProdutos() {
     <div className="min-h-screen">
       <AdminNav title="Produtos" />
       <main className="mx-auto max-w-6xl px-4 py-6">
-        <div className="flex justify-between items-center mb-4">
-          <p className="text-sm text-muted-foreground">{products.length} produtos</p>
-          <Button onClick={novo}><Plus className="h-4 w-4 mr-1" /> Novo produto</Button>
+        <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center mb-4">
+          <p className="text-sm text-muted-foreground">{filtered.length} de {products.length} produtos</p>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Input
+              placeholder="Buscar produto..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full sm:w-64"
+            />
+            <Button onClick={novo}><Plus className="h-4 w-4 mr-1" /> Novo produto</Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
