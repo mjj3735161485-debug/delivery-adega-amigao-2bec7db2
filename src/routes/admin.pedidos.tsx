@@ -9,7 +9,7 @@ import { brl, formatPhoneBR } from "@/lib/format";
 import { toast } from "sonner";
 import { withCountryCode } from "@/lib/format";
 import { notifyStatus } from "@/lib/notify-status.functions";
-import logoAsset from "@/assets/adega-amigao-logo-bw.png.asset.json";
+import logoAsset from "@/assets/adega-amigao-logo-bw-white.png.asset.json";
 
 const STATUS_LABELS: Record<string, "Recebido" | "Preparando" | "Saiu para entrega" | "Entregue" | null> = {
   novo: "Recebido",
