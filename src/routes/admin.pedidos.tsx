@@ -318,7 +318,7 @@ function StatusBadge({ s }: { s: string }) {
 }
 
 function printOrder(o: Order, its: Item[]) {
-  const w = window.open("", "print", "width=420,height=700");
+  const w = window.open("about:blank", "print", "width=420,height=700");
   if (!w) return;
 
   const tipoEntrega = o.tipo_entrega === "retirada" ? "RETIRADA" : "ENTREGA";
