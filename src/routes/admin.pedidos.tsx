@@ -325,12 +325,12 @@ function printOrder(o: Order, its: Item[]) {
   const itemsHtml = its
     .map(
       (i, idx) => `
-    <div class="item" style="background:${idx % 2 === 0 ? "#F3F4F6" : "#FFFFFF"};padding:6px 4px;border-radius:4px;margin-bottom:4px;border:1px solid #E5E7EB;">
-      <div class="row" style="font-weight:600;">
+    <div class="item" style="padding:6px 4px;margin-bottom:4px;border:1px solid #000;border-top:${idx === 0 ? "1px solid #000" : "none"};">
+      <div class="row" style="font-weight:700;">
         <span>${i.quantidade}× ${i.nome_snapshot}</span>
         <span>${brl(Number(i.preco_snapshot) * i.quantidade)}</span>
       </div>
-      <div style="font-size:10px;color:#4B5563;margin-top:2px;">Unitário ${brl(Number(i.preco_snapshot))}</div>
+      <div style="font-size:10px;color:#000;margin-top:2px;">Unitário ${brl(Number(i.preco_snapshot))}</div>
     </div>`
     )
     .join("");
@@ -340,21 +340,21 @@ function printOrder(o: Order, its: Item[]) {
     @page { size: 80mm auto; margin: 0; }
     body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color:#000; margin:0; padding:0; width:80mm; background:#fff; }
     .sheet { padding:4mm; }
-    .header { background: #fff; color:#000; text-align:center; padding:10px 6px; border:2px solid #000; border-bottom:1px solid #000; border-radius:8px 8px 0 0; }
+    .header { color:#000; text-align:center; padding:10px 6px; border:2px solid #000; border-bottom:1px solid #000; border-radius:8px 8px 0 0; }
     .header .logo { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; background:#fff; color:#000; font-weight:900; font-size:18px; border:2px solid #000; border-radius:50%; margin-bottom:4px; }
     .header h1 { font-size: 20px; margin:0; letter-spacing:1px; }
-    .header small { font-size: 10px; color:#374151; }
-    .badges { display:flex; justify-content:center; gap:6px; padding:8px 4px; background:#F9FAFB; border-bottom:2px dashed #000; }
+    .header small { font-size: 10px; color:#000; }
+    .badges { display:flex; justify-content:center; gap:6px; padding:8px 4px; border-bottom:2px dashed #000; }
     .badge { font-size:10px; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:999px; color:#fff; background:#000; border:1px solid #000; }
-    .customer { background:#F9FAFB; padding:8px 6px; border-left:4px solid #000; margin:8px 0; border-radius:0 6px 6px 0; }
+    .customer { padding:8px 6px; border-left:4px solid #000; margin:8px 0; border-radius:0 6px 6px 0; }
     .customer strong { color:#000; font-size:13px; }
     .section-title { font-size:11px; font-weight:700; color:#000; text-transform:uppercase; margin:10px 0 6px; border-bottom:1px solid #000; padding-bottom:2px; }
     .row { display:flex; justify-content:space-between; gap:6px; }
-    .totals { background:#F3F4F6; padding:8px 6px; border-radius:6px; margin-top:8px; border:1px solid #000; }
+    .totals { padding:8px 6px; margin-top:8px; border:2px solid #000; }
     .tot { font-weight:800; font-size:15px; color:#000; }
-    .payment { background:#F9FAFB; padding:6px; border-radius:6px; margin-top:6px; border-left:4px solid #000; }
-    .obs { background:#F3F4F6; padding:6px; border-radius:6px; margin-top:6px; font-style:italic; color:#000; }
-    .footer { text-align:center; margin-top:10px; color:#374151; font-size:10px; }
+    .payment { padding:6px; margin-top:6px; border-left:4px solid #000; border-top:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000; }
+    .obs { padding:6px; margin-top:6px; font-style:italic; color:#000; border:1px dashed #000; }
+    .footer { text-align:center; margin-top:10px; color:#000; font-size:10px; }
     .footer strong { color:#000; font-size:12px; }
     hr { border:0; border-top:1px dashed #000; margin:8px 0; }
   </style></head><body>
