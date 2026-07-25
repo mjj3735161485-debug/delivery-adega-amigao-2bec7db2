@@ -317,36 +317,91 @@ function StatusBadge({ s }: { s: string }) {
 }
 
 function printOrder(o: Order, its: Item[]) {
-  const w = window.open("", "print", "width=380,height=600");
+  const w = window.open("", "print", "width=420,height=700");
   if (!w) return;
+
+  const statusColor: Record<string, string> = {
+    novo: "#D97706",
+    preparo: "#CA8A04",
+    entrega: "#2563EB",
+    entregue: "#059669",
+    cancelado: "#DC2626",
+  };
+
+  const tipoEntrega = o.tipo_entrega === "retirada" ? "RETIRADA" : "ENTREGA";
+  const tipoColor = o.tipo_entrega === "retirada" ? "#059669" : "#D97706";
+
+  const itemsHtml = its
+    .map(
+      (i, idx) => `
+    <div class="item" style="background:${idx % 2 === 0 ? "#FFFBEB" : "#FFFFFF"};padding:6px 4px;border-radius:4px;margin-bottom:4px;">
+      <div class="row" style="font-weight:600;">
+        <span>${i.quantidade}× ${i.nome_snapshot}</span>
+        <span>${brl(Number(i.preco_snapshot) * i.quantidade)}</span>
+      </div>
+      <div style="font-size:10px;color:#666;margin-top:2px;">Unitário ${brl(Number(i.preco_snapshot))}</div>
+    </div>`
+    )
+    .join("");
+
   const html = `<!doctype html><html><head><meta charset="utf-8"><title>Pedido #${o.numero}</title>
   <style>
-    @page { size: 80mm auto; margin: 4mm; }
-    body { font-family: 'Courier New', monospace; font-size: 12px; color:#000; margin:0; padding:4mm; width:72mm; }
-    h1 { font-size: 16px; margin: 0 0 4px; text-align:center; }
-    hr { border: 0; border-top: 1px dashed #000; margin: 6px 0; }
-    .row { display:flex; justify-content:space-between; gap:8px; }
-    .tot { font-weight:bold; font-size:14px; }
-    small { font-size: 10px; }
+    @page { size: 80mm auto; margin: 0; }
+    body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color:#1F2937; margin:0; padding:0; width:80mm; background:#fff; }
+    .sheet { padding:4mm; }
+    .header { background: linear-gradient(135deg, #D97706 0%, #B45309 100%); color:#fff; text-align:center; padding:10px 6px; border-radius:8px 8px 0 0; }
+    .header .logo { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; background:#fff; color:#B45309; font-weight:900; font-size:18px; border-radius:50%; margin-bottom:4px; }
+    .header h1 { font-size: 20px; margin:0; letter-spacing:1px; }
+    .header small { font-size: 10px; opacity:0.9; }
+    .badges { display:flex; justify-content:center; gap:6px; padding:8px 4px; background:#FFF7ED; border-bottom:2px dashed #FCD34D; }
+    .badge { font-size:10px; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:999px; color:#fff; }
+    .customer { background:#FFFBEB; padding:8px 6px; border-left:4px solid #D97706; margin:8px 0; border-radius:0 6px 6px 0; }
+    .customer strong { color:#92400E; font-size:13px; }
+    .section-title { font-size:11px; font-weight:700; color:#92400E; text-transform:uppercase; margin:10px 0 6px; border-bottom:1px solid #FDE68A; padding-bottom:2px; }
+    .row { display:flex; justify-content:space-between; gap:6px; }
+    .totals { background:#FEF3C7; padding:8px 6px; border-radius:6px; margin-top:8px; border:1px solid #FCD34D; }
+    .tot { font-weight:800; font-size:15px; color:#92400E; }
+    .payment { background:#ECFDF5; padding:6px; border-radius:6px; margin-top:6px; border-left:4px solid #059669; }
+    .obs { background:#F3F4F6; padding:6px; border-radius:6px; margin-top:6px; font-style:italic; color:#4B5563; }
+    .footer { text-align:center; margin-top:10px; color:#6B7280; font-size:10px; }
+    .footer strong { color:#D97706; font-size:12px; }
+    hr { border:0; border-top:1px dashed #D1D5DB; margin:8px 0; }
   </style></head><body>
-  <h1>PEDIDO #${o.numero}</h1>
-  <div style="text-align:center"><small>${new Date(o.created_at).toLocaleString("pt-BR")}</small></div>
-  <hr>
-  <div><strong>${o.cliente_nome}</strong></div>
-  <div>${formatPhoneBR(o.cliente_telefone)}</div>
-  <div>${o.endereco}</div>
-  <hr>
-  ${its.map((i) => `<div class="row"><span>${i.quantidade}x ${i.nome_snapshot}</span><span>${brl(Number(i.preco_snapshot) * i.quantidade)}</span></div>`).join("")}
-  <hr>
-  <div class="row"><span>Subtotal</span><span>${brl(Number(o.subtotal))}</span></div>
-  <div class="row"><span>Entrega</span><span>${brl(Number(o.taxa_entrega))}</span></div>
-  <div class="row tot"><span>TOTAL</span><span>${brl(Number(o.total))}</span></div>
-  <hr>
-  <div>Pagamento: ${o.pagamento}${o.troco_para ? ` (troco ${brl(Number(o.troco_para))})` : ""}</div>
-  ${o.observacoes ? `<div>Obs: ${o.observacoes}</div>` : ""}
-  <hr>
-  <div style="text-align:center"><small>Obrigado!</small></div>
-  <script>window.onload=()=>{window.print();setTimeout(()=>window.close(),300);}</script>
+  <div class="sheet">
+    <div class="header">
+      <div class="logo">A</div>
+      <h1>ADEGA AMIGÃO</h1>
+      <small>${new Date(o.created_at).toLocaleString("pt-BR")}</small>
+    </div>
+    <div class="badges">
+      <span class="badge" style="background:${statusColor[o.status] ?? "#6B7280"};">#${o.numero} · ${o.status}</span>
+      <span class="badge" style="background:${tipoColor};">${tipoEntrega}</span>
+    </div>
+    <div class="customer">
+      <div class="row"><strong>${o.cliente_nome}</strong></div>
+      <div class="row" style="margin-top:3px;"><span>Tel: ${formatPhoneBR(o.cliente_telefone)}</span></div>
+      <div style="margin-top:4px;color:#374151;">End: ${o.endereco}</div>
+    </div>
+    <div class="section-title">Itens do pedido</div>
+    ${itemsHtml}
+    <hr>
+    <div class="totals">
+      <div class="row"><span>Subtotal</span><span>${brl(Number(o.subtotal))}</span></div>
+      <div class="row"><span>Taxa de entrega</span><span>${brl(Number(o.taxa_entrega))}</span></div>
+      <div class="row tot"><span>TOTAL</span><span>${brl(Number(o.total))}</span></div>
+    </div>
+    <div class="payment">
+      <div><strong>Pgto:</strong> ${o.pagamento}</div>
+      ${o.troco_para ? `<div style="margin-top:3px;">Troco para: <strong>${brl(Number(o.troco_para))}</strong></div>` : ""}
+    </div>
+    ${o.observacoes ? `<div class="obs"><strong>Obs:</strong> ${o.observacoes}</div>` : ""}
+    <hr>
+    <div class="footer">
+      <strong>Obrigado pela preferência!</strong><br>
+      Adega Amigão
+    </div>
+  </div>
+  <script>window.onload=()=>{window.print();setTimeout(()=>window.close(),400);}</script>
   </body></html>`;
   w.document.write(html);
   w.document.close();
