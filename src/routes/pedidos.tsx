@@ -356,7 +356,7 @@ function OrderCard({
 
       <div className="mt-2 flex flex-wrap gap-1">
         <Button asChild size="sm" variant="outline" className="h-7 text-xs">
-          <Link to="/pedido/$numero" params={{ numero: String(order.numero) }} search={order.access_token ? { t: order.access_token } : {}}>
+          <Link to="/pedido/$numero" params={{ numero: String(order.numero) }} search={{ t: order.access_token ?? undefined }}>
             Detalhes
           </Link>
         </Button>

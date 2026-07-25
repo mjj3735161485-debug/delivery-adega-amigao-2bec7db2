@@ -65,7 +65,7 @@ function AuthPage() {
       if (!isAdmin && !isCourier) {
         // Sessão de cliente logada no painel da loja: encerra e manda pra área do cliente
         await supabase.auth.signOut();
-        navigate({ to: "/conta" });
+        navigate({ to: "/conta", search: { next: "" } });
         return;
       }
       navigate({ to: isCourier && !isAdmin ? "/motoboy" : "/admin/pedidos" });
@@ -123,7 +123,7 @@ function AuthPage() {
         toast.error("Este login é apenas para a equipe da loja.", {
           description: "Se você é cliente, use a área do cliente.",
         });
-        navigate({ to: "/conta" });
+        navigate({ to: "/conta", search: { next: "" } });
         return;
       }
       toast.success("Bem-vindo!");
@@ -235,6 +235,7 @@ function AuthPage() {
           <p className="text-xs text-muted-foreground mb-2">É cliente?</p>
           <Link
             to="/conta"
+            search={{ next: "" }}
             className="text-xs text-primary hover:underline font-medium"
           >
             Acesse a área do cliente →
