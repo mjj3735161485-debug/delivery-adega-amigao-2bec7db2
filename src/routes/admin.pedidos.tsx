@@ -330,7 +330,6 @@ function printOrder(o: Order, its: Item[]) {
 
   const tipoEntrega = o.tipo_entrega === "retirada" ? "RETIRADA" : "ENTREGA";
   const tipoColor = o.tipo_entrega === "retirada" ? "#059669" : "#D97706";
-  const tipoIcon = o.tipo_entrega === "retirada" ? "🏪" : "🛵";
 
   const itemsHtml = its
     .map(
@@ -350,8 +349,9 @@ function printOrder(o: Order, its: Item[]) {
     @page { size: 80mm auto; margin: 0; }
     body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color:#1F2937; margin:0; padding:0; width:80mm; background:#fff; }
     .sheet { padding:4mm; }
-    .header { background: linear-gradient(135deg, #D97706 0%, #B45309 100%); color:#fff; text-align:center; padding:8px 6px; border-radius:8px 8px 0 0; }
-    .header h1 { font-size: 22px; margin:0; letter-spacing:1px; }
+    .header { background: linear-gradient(135deg, #D97706 0%, #B45309 100%); color:#fff; text-align:center; padding:10px 6px; border-radius:8px 8px 0 0; }
+    .header .logo { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; background:#fff; color:#B45309; font-weight:900; font-size:18px; border-radius:50%; margin-bottom:4px; }
+    .header h1 { font-size: 20px; margin:0; letter-spacing:1px; }
     .header small { font-size: 10px; opacity:0.9; }
     .badges { display:flex; justify-content:center; gap:6px; padding:8px 4px; background:#FFF7ED; border-bottom:2px dashed #FCD34D; }
     .badge { font-size:10px; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:999px; color:#fff; }
@@ -369,17 +369,18 @@ function printOrder(o: Order, its: Item[]) {
   </style></head><body>
   <div class="sheet">
     <div class="header">
-      <h1>🍺 ADEGA AMIGÃO</h1>
+      <div class="logo">A</div>
+      <h1>ADEGA AMIGÃO</h1>
       <small>${new Date(o.created_at).toLocaleString("pt-BR")}</small>
     </div>
     <div class="badges">
       <span class="badge" style="background:${statusColor[o.status] ?? "#6B7280"};">#${o.numero} · ${o.status}</span>
-      <span class="badge" style="background:${tipoColor};">${tipoIcon} ${tipoEntrega}</span>
+      <span class="badge" style="background:${tipoColor};">${tipoEntrega}</span>
     </div>
     <div class="customer">
       <div class="row"><strong>${o.cliente_nome}</strong></div>
-      <div class="row" style="margin-top:3px;"><span>📞 ${formatPhoneBR(o.cliente_telefone)}</span></div>
-      <div style="margin-top:4px;color:#374151;">📍 ${o.endereco}</div>
+      <div class="row" style="margin-top:3px;"><span>Tel: ${formatPhoneBR(o.cliente_telefone)}</span></div>
+      <div style="margin-top:4px;color:#374151;">End: ${o.endereco}</div>
     </div>
     <div class="section-title">Itens do pedido</div>
     ${itemsHtml}
@@ -390,14 +391,14 @@ function printOrder(o: Order, its: Item[]) {
       <div class="row tot"><span>TOTAL</span><span>${brl(Number(o.total))}</span></div>
     </div>
     <div class="payment">
-      <div><strong>💳 Pagamento:</strong> ${o.pagamento}</div>
+      <div><strong>Pgto:</strong> ${o.pagamento}</div>
       ${o.troco_para ? `<div style="margin-top:3px;">Troco para: <strong>${brl(Number(o.troco_para))}</strong></div>` : ""}
     </div>
-    ${o.observacoes ? `<div class="obs"><strong>📝 Obs:</strong> ${o.observacoes}</div>` : ""}
+    ${o.observacoes ? `<div class="obs"><strong>Obs:</strong> ${o.observacoes}</div>` : ""}
     <hr>
     <div class="footer">
       <strong>Obrigado pela preferência!</strong><br>
-      Adega Amigão 🍻
+      Adega Amigão
     </div>
   </div>
   <script>window.onload=()=>{window.print();setTimeout(()=>window.close(),400);}</script>
