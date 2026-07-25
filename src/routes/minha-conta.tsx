@@ -51,7 +51,7 @@ function MyAccountPage() {
     (async () => {
       const { data: sess } = await supabase.auth.getSession();
       if (!sess.session) {
-        navigate({ to: "/conta" });
+        navigate({ to: "/conta", search: { next: "" } });
         return;
       }
       if (!mounted) return;

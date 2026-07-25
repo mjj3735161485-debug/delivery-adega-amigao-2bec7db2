@@ -9,6 +9,7 @@ import { brl, formatPhoneBR } from "@/lib/format";
 import { toast } from "sonner";
 import { withCountryCode } from "@/lib/format";
 import { notifyStatus } from "@/lib/notify-status.functions";
+import logoAsset from "@/assets/adega-amigao-logo-bw-white.png.asset.json";
 
 const STATUS_LABELS: Record<string, "Recebido" | "Preparando" | "Saiu para entrega" | "Entregue" | null> = {
   novo: "Recebido",
@@ -317,7 +318,7 @@ function StatusBadge({ s }: { s: string }) {
 }
 
 function printOrder(o: Order, its: Item[]) {
-  const w = window.open("", "print", "width=420,height=700");
+  const w = window.open("about:blank", "print", "width=420,height=700");
   if (!w) return;
 
   const tipoEntrega = o.tipo_entrega === "retirada" ? "RETIRADA" : "ENTREGA";
@@ -341,7 +342,7 @@ function printOrder(o: Order, its: Item[]) {
     body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color:#000; margin:0; padding:0; width:80mm; background:#fff; }
     .sheet { padding:4mm; }
     .header { color:#000; text-align:center; padding:10px 6px; border:2px solid #000; border-bottom:1px solid #000; border-radius:8px 8px 0 0; }
-    .header .logo { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; background:#fff; color:#000; font-weight:900; font-size:18px; border:2px solid #000; border-radius:50%; margin-bottom:4px; }
+    .header .logo { display:block; margin:0 auto 6px; max-width:180px; height:auto; }
     .header h1 { font-size: 20px; margin:0; letter-spacing:1px; }
     .header small { font-size: 10px; color:#000; }
     .badges { display:flex; justify-content:center; gap:6px; padding:8px 4px; border-bottom:2px dashed #000; }
@@ -360,7 +361,7 @@ function printOrder(o: Order, its: Item[]) {
   </style></head><body>
   <div class="sheet">
     <div class="header">
-      <div class="logo">A</div>
+      <img class="logo" src="${logoAsset.url}" alt="Adega Amigão" />
       <h1>ADEGA AMIGÃO</h1>
       <small>${new Date(o.created_at).toLocaleString("pt-BR")}</small>
     </div>
