@@ -340,28 +340,28 @@ function printOrder(o: Order, its: Item[]) {
   <style>
     @page { size: 80mm auto; margin: 0; }
     body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color:#000; margin:0; padding:0; width:80mm; background:#fff; }
-    .sheet { padding:4mm; }
-    .logo { display:block; margin:0 auto 10px; max-width:180px; height:auto; }
-    .order-box { border:2px solid #000; border-radius:8px; padding:6px; margin:8px 0 10px; background:#fff; }
-    .order-box .number { text-align:center; border-bottom:2px dashed #000; padding:6px 0 8px; margin-bottom:8px; }
+    .sheet { padding:2mm 3mm; }
+    .logo { display:block; margin:0 auto 4px; max-width:160px; height:auto; }
+    .order-box { border:2px solid #000; border-radius:6px; padding:4px; margin:4px 0 6px; background:#fff; }
+    .order-box .number { text-align:center; border-bottom:2px dashed #000; padding:4px 0 6px; margin-bottom:6px; }
     .order-box .number .label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#000; }
-    .order-box .number .value { font-size:26px; font-weight:800; line-height:1; color:#000; }
-    .badges { display:flex; justify-content:center; gap:6px; padding:0 4px 8px; border-bottom:2px dashed #000; }
-    .badge { font-size:10px; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:999px; color:#fff; background:#000; border:1px solid #000; }
-    .customer { padding:8px 6px; border-bottom:2px dashed #000; }
+    .order-box .number .value { font-size:24px; font-weight:800; line-height:1; color:#000; }
+    .badges { display:flex; justify-content:center; gap:4px; padding:0 2px 6px; border-bottom:2px dashed #000; }
+    .badge { font-size:9px; font-weight:700; text-transform:uppercase; padding:2px 6px; border-radius:999px; color:#fff; background:#000; border:1px solid #000; }
+    .customer { padding:6px 4px; border-bottom:2px dashed #000; }
     .customer strong { color:#000; font-size:13px; }
-    .section-title { font-size:11px; font-weight:700; color:#000; text-transform:uppercase; margin:10px 0 6px; border-bottom:1px solid #000; padding-bottom:2px; }
+    .section-title { font-size:11px; font-weight:700; color:#000; text-transform:uppercase; margin:6px 0 4px; border-bottom:1px solid #000; padding-bottom:2px; }
     .row { display:flex; justify-content:space-between; gap:6px; }
-    .totals { padding:8px 6px; margin-top:8px; border:2px solid #000; }
+    .totals { padding:6px 4px; margin-top:6px; border:2px solid #000; }
     .tot { font-weight:800; font-size:15px; color:#000; }
-    .payment { padding:6px; margin-top:6px; border-left:4px solid #000; border-top:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000; }
-    .obs { padding:6px; margin-top:6px; font-style:italic; color:#000; border:1px dashed #000; }
-    .store-name { text-align:center; margin-top:10px; }
-    .store-name h1 { font-size: 20px; margin:0; letter-spacing:1px; }
-    .store-name small { font-size: 10px; color:#000; }
-    .footer { text-align:center; margin-top:10px; color:#000; font-size:10px; }
+    .payment { padding:4px; margin-top:4px; border-left:4px solid #000; border-top:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000; }
+    .obs { padding:4px; margin-top:4px; font-style:italic; color:#000; border:1px dashed #000; }
+    .store-name { text-align:center; margin-top:6px; }
+    .store-name h1 { font-size: 18px; margin:0; letter-spacing:1px; }
+    .store-name small { font-size: 9px; color:#000; }
+    .footer { text-align:center; margin-top:4px; margin-bottom:2px; color:#000; font-size:10px; }
     .footer strong { color:#000; font-size:12px; }
-    hr { border:0; border-top:1px dashed #000; margin:8px 0; }
+    hr { border:0; border-top:1px dashed #000; margin:6px 0; }
   </style></head><body>
   <div class="sheet">
     <img class="logo" src="${logoAsset.url}" alt="Adega Amigão" />
