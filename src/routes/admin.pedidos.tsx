@@ -325,8 +325,8 @@ function printOrder(o: Order, its: Item[]) {
 
   const itemsHtml = its
     .map(
-      (i, idx) => `
-    <div class="item" style="padding:6px 4px;margin-bottom:4px;border:1px solid #000;border-top:${idx === 0 ? "1px solid #000" : "none"};">
+      (i) => `
+    <div class="item" style="padding:5px 4px;border-bottom:1px dashed #000;">
       <div class="row" style="font-weight:700;">
         <span>${i.quantidade}× ${i.nome_snapshot}</span>
         <span>${brl(Number(i.preco_snapshot) * i.quantidade)}</span>
@@ -341,16 +341,14 @@ function printOrder(o: Order, its: Item[]) {
     @page { size: 80mm auto; margin: 0; }
     body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color:#000; margin:0; padding:0; width:80mm; background:#fff; }
     .sheet { padding:4mm; }
-    .header { color:#000; text-align:center; padding:10px 6px 14px; border:2px solid #000; border-bottom:1px solid #000; border-radius:8px 8px 0 0; }
-    .header .logo { display:block; margin:0 auto 10px; max-width:180px; height:auto; }
-    .header .order-box { display:inline-block; border:2px solid #000; padding:8px 18px; margin:8px 0 10px; border-radius:6px; background:#fff; }
-    .header .order-box .label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#000; }
-    .header .order-box .number { font-size:26px; font-weight:800; line-height:1; color:#000; }
-    .header h1 { font-size: 20px; margin:0; letter-spacing:1px; }
-    .header small { font-size: 10px; color:#000; }
-    .badges { display:flex; justify-content:center; gap:6px; padding:8px 4px; border-bottom:2px dashed #000; }
+    .logo { display:block; margin:0 auto 10px; max-width:180px; height:auto; }
+    .order-box { border:2px solid #000; border-radius:8px; padding:6px; margin:8px 0 10px; background:#fff; }
+    .order-box .number { text-align:center; border-bottom:2px dashed #000; padding:6px 0 8px; margin-bottom:8px; }
+    .order-box .number .label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#000; }
+    .order-box .number .value { font-size:26px; font-weight:800; line-height:1; color:#000; }
+    .badges { display:flex; justify-content:center; gap:6px; padding:0 4px 8px; border-bottom:2px dashed #000; }
     .badge { font-size:10px; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:999px; color:#fff; background:#000; border:1px solid #000; }
-    .customer { padding:8px 6px; border-left:4px solid #000; margin:8px 0; border-radius:0 6px 6px 0; }
+    .customer { padding:8px 6px; border-bottom:2px dashed #000; }
     .customer strong { color:#000; font-size:13px; }
     .section-title { font-size:11px; font-weight:700; color:#000; text-transform:uppercase; margin:10px 0 6px; border-bottom:1px solid #000; padding-bottom:2px; }
     .row { display:flex; justify-content:space-between; gap:6px; }
@@ -358,43 +356,47 @@ function printOrder(o: Order, its: Item[]) {
     .tot { font-weight:800; font-size:15px; color:#000; }
     .payment { padding:6px; margin-top:6px; border-left:4px solid #000; border-top:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000; }
     .obs { padding:6px; margin-top:6px; font-style:italic; color:#000; border:1px dashed #000; }
+    .store-name { text-align:center; margin-top:10px; }
+    .store-name h1 { font-size: 20px; margin:0; letter-spacing:1px; }
+    .store-name small { font-size: 10px; color:#000; }
     .footer { text-align:center; margin-top:10px; color:#000; font-size:10px; }
     .footer strong { color:#000; font-size:12px; }
     hr { border:0; border-top:1px dashed #000; margin:8px 0; }
   </style></head><body>
   <div class="sheet">
-    <div class="header">
-      <img class="logo" src="${logoAsset.url}" alt="Adega Amigão" />
-      <div class="order-box">
+    <img class="logo" src="${logoAsset.url}" alt="Adega Amigão" />
+    <div class="order-box">
+      <div class="number">
         <div class="label">Pedido</div>
-        <div class="number">#${o.numero}</div>
+        <div class="value">#${o.numero}</div>
       </div>
+      <div class="badges">
+        <span class="badge">${o.status}</span>
+        <span class="badge">${tipoEntrega}</span>
+      </div>
+      <div class="customer">
+        <div class="row"><strong>${o.cliente_nome}</strong></div>
+        <div class="row" style="margin-top:3px;"><span>Tel: ${formatPhoneBR(o.cliente_telefone)}</span></div>
+        <div style="margin-top:4px;color:#000;">End: ${o.endereco}</div>
+      </div>
+      <div class="section-title">Itens do pedido</div>
+      ${itemsHtml}
+      <hr>
+      <div class="totals">
+        <div class="row"><span>Subtotal</span><span>${brl(Number(o.subtotal))}</span></div>
+        <div class="row"><span>Taxa de entrega</span><span>${brl(Number(o.taxa_entrega))}</span></div>
+        <div class="row tot"><span>TOTAL</span><span>${brl(Number(o.total))}</span></div>
+      </div>
+      <div class="payment">
+        <div><strong>Pgto:</strong> ${o.pagamento}</div>
+        ${o.troco_para ? `<div style="margin-top:3px;">Troco para: <strong>${brl(Number(o.troco_para))}</strong></div>` : ""}
+      </div>
+      ${o.observacoes ? `<div class="obs"><strong>Obs:</strong> ${o.observacoes}</div>` : ""}
+    </div>
+    <div class="store-name">
       <h1>ADEGA AMIGÃO</h1>
       <small>${new Date(o.created_at).toLocaleString("pt-BR")}</small>
     </div>
-    <div class="badges">
-      <span class="badge">${o.status}</span>
-      <span class="badge">${tipoEntrega}</span>
-    </div>
-    <div class="customer">
-      <div class="row"><strong>${o.cliente_nome}</strong></div>
-      <div class="row" style="margin-top:3px;"><span>Tel: ${formatPhoneBR(o.cliente_telefone)}</span></div>
-      <div style="margin-top:4px;color:#000;">End: ${o.endereco}</div>
-    </div>
-    <div class="section-title">Itens do pedido</div>
-    ${itemsHtml}
-    <hr>
-    <div class="totals">
-      <div class="row"><span>Subtotal</span><span>${brl(Number(o.subtotal))}</span></div>
-      <div class="row"><span>Taxa de entrega</span><span>${brl(Number(o.taxa_entrega))}</span></div>
-      <div class="row tot"><span>TOTAL</span><span>${brl(Number(o.total))}</span></div>
-    </div>
-    <div class="payment">
-      <div><strong>Pgto:</strong> ${o.pagamento}</div>
-      ${o.troco_para ? `<div style="margin-top:3px;">Troco para: <strong>${brl(Number(o.troco_para))}</strong></div>` : ""}
-    </div>
-    ${o.observacoes ? `<div class="obs"><strong>Obs:</strong> ${o.observacoes}</div>` : ""}
-    <hr>
     <div class="footer">
       <strong>Obrigado pela preferência!</strong><br>
       Adega Amigão
