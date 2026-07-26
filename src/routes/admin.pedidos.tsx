@@ -341,8 +341,11 @@ function printOrder(o: Order, its: Item[]) {
     @page { size: 80mm auto; margin: 0; }
     body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color:#000; margin:0; padding:0; width:80mm; background:#fff; }
     .sheet { padding:4mm; }
-    .header { color:#000; text-align:center; padding:10px 6px; border:2px solid #000; border-bottom:1px solid #000; border-radius:8px 8px 0 0; }
-    .header .logo { display:block; margin:0 auto 6px; max-width:180px; height:auto; }
+    .header { color:#000; text-align:center; padding:10px 6px 14px; border:2px solid #000; border-bottom:1px solid #000; border-radius:8px 8px 0 0; }
+    .header .logo { display:block; margin:0 auto 10px; max-width:180px; height:auto; }
+    .header .order-box { display:inline-block; border:2px solid #000; padding:8px 18px; margin:8px 0 10px; border-radius:6px; background:#fff; }
+    .header .order-box .label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#000; }
+    .header .order-box .number { font-size:26px; font-weight:800; line-height:1; color:#000; }
     .header h1 { font-size: 20px; margin:0; letter-spacing:1px; }
     .header small { font-size: 10px; color:#000; }
     .badges { display:flex; justify-content:center; gap:6px; padding:8px 4px; border-bottom:2px dashed #000; }
@@ -362,11 +365,15 @@ function printOrder(o: Order, its: Item[]) {
   <div class="sheet">
     <div class="header">
       <img class="logo" src="${logoAsset.url}" alt="Adega Amigão" />
+      <div class="order-box">
+        <div class="label">Pedido</div>
+        <div class="number">#${o.numero}</div>
+      </div>
       <h1>ADEGA AMIGÃO</h1>
       <small>${new Date(o.created_at).toLocaleString("pt-BR")}</small>
     </div>
     <div class="badges">
-      <span class="badge">#${o.numero} · ${o.status}</span>
+      <span class="badge">${o.status}</span>
       <span class="badge">${tipoEntrega}</span>
     </div>
     <div class="customer">
