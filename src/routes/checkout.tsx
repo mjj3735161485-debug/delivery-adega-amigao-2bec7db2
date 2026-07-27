@@ -853,6 +853,52 @@ function Checkout() {
               <Textarea id="obs" rows={2} value={form.observacoes}
                 onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
             </div>
+            {userId && cashbackSaldo > 0 && (
+              <div className="rounded-md border border-emerald-500/40 bg-emerald-500/5 p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-emerald-400">
+                  <Wallet className="h-4 w-4" />
+                  Usar cashback ({brl(cashbackSaldo)} disponível)
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    inputMode="decimal"
+                    placeholder="Ex: 10,00"
+                    value={cashbackInput}
+                    onChange={(e) => setCashbackInput(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCashbackInput(
+                        Math.min(cashbackSaldo, totalSemDesconto)
+                          .toFixed(2)
+                          .replace(".", ","),
+                      )
+                    }
+                  >
+                    Usar tudo
+                  </Button>
+                  {cashbackInput && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setCashbackInput("")}>
+                      Limpar
+                    </Button>
+                  )}
+                </div>
+                {parseMoneyLocal(cashbackInput) > 0 && cashbackPedido < parseMoneyLocal(cashbackInput) && (
+                  <p className="text-[11px] text-amber-400">
+                    Ajustado para {brl(cashbackPedido)} — limitado ao saldo/total.
+                  </p>
+                )}
+                {cashbackPedido >= totalSemDesconto && totalSemDesconto > 0 && (
+                  <p className="text-[11px] text-emerald-300">
+                    Seu cashback cobre o pedido inteiro! Total: <b>{brl(0)}</b>.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <aside className="bg-card border border-border rounded-xl p-4 h-fit space-y-4 md:sticky md:top-20">
@@ -875,6 +921,12 @@ function Checkout() {
                 </span>
                 <span>{isPickup ? "grátis" : detected ? brl(taxa) : "—"}</span>
               </div>
+              {cashbackPedido > 0 && (
+                <div className="flex justify-between text-emerald-400">
+                  <span>🎁 Cashback</span>
+                  <span>−{brl(cashbackPedido)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-base pt-1"><span>Total</span><span className="text-primary">{brl(total)}</span></div>
             </div>
             <Button type="submit" size="lg" className="w-full" disabled={submitting || lojaFechada || (!isPickup && (!form.bairro_id || !pontoConfirmado))}>
