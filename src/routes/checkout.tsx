@@ -470,6 +470,7 @@ function Checkout() {
         "",
         `Subtotal: ${brl(subtotal)}`,
         isPickup ? `Retirada na loja: sem taxa` : `Entrega (${bairroUp}): ${brl(taxa)}`,
+        ...(cashbackPedido > 0 ? [`Cashback aplicado: -${brl(cashbackPedido)}`] : []),
         `Total: ${brl(total)}`,
         "",
         `👤 ${parsed.data.cliente_nome}`,
