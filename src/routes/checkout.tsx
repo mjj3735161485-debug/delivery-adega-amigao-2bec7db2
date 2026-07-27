@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Calculator, CheckCircle2, Loader2, MapPin, RefreshCw, Store, Truck, XCircle } from "lucide-react";
+import { ArrowLeft, Calculator, CheckCircle2, Loader2, MapPin, RefreshCw, Store, Truck, Wallet, XCircle } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
@@ -94,6 +94,8 @@ function Checkout() {
   } | null>(null);
   const [pontoConfirmado, setPontoConfirmado] = useState(false);
   const [pinPos, setPinPos] = useState<{ lat: number; lng: number } | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [cashbackInput, setCashbackInput] = useState<string>("");
   const storeOpen = useStoreOpen();
   const lojaFechada = storeOpen.data ? !storeOpen.data.aberto : false;
 
@@ -166,6 +168,8 @@ function Checkout() {
     (async () => {
       const { data: sess } = await supabase.auth.getSession();
       if (!sess.session) return;
+      if (!mounted) return;
+      setUserId(sess.session.user.id);
       const { data: p } = await supabase
         .from("customer_profiles")
         .select("nome, telefone, endereco_padrao")
@@ -182,8 +186,27 @@ function Checkout() {
     return () => { mounted = false; };
   }, []);
 
+  const { data: cashbackSaldo = 0 } = useQuery({
+    queryKey: ["cashback-checkout", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_my_cashback_balance");
+      if (error) throw error;
+      return Number(data ?? 0);
+    },
+  });
+
   const taxa = isPickup ? 0 : (detected ? Number(detected.taxa) : 0);
-  const total = subtotal + taxa;
+  const totalSemDesconto = subtotal + taxa;
+  const parseMoneyLocal = (s: string) => {
+    const n = Number((s || "0").replace(/\./g, "").replace(",", "."));
+    return isFinite(n) ? n : 0;
+  };
+  const cashbackPedido = Math.max(
+    0,
+    Math.min(parseMoneyLocal(cashbackInput), cashbackSaldo, totalSemDesconto),
+  );
+  const total = Math.max(0, totalSemDesconto - cashbackPedido);
 
   function focusEndereco() {
     setTimeout(() => document.getElementById("end")?.focus(), 50);
@@ -426,6 +449,7 @@ function Checkout() {
           total: String(total),
           destino_lat,
           destino_lng,
+          cashback_usar: cashbackPedido > 0 ? String(cashbackPedido) : "",
         },
         _items: items.map((it) => ({
           product_id: it.id,
@@ -446,6 +470,7 @@ function Checkout() {
         "",
         `Subtotal: ${brl(subtotal)}`,
         isPickup ? `Retirada na loja: sem taxa` : `Entrega (${bairroUp}): ${brl(taxa)}`,
+        ...(cashbackPedido > 0 ? [`Cashback aplicado: -${brl(cashbackPedido)}`] : []),
         `Total: ${brl(total)}`,
         "",
         `👤 ${parsed.data.cliente_nome}`,
@@ -829,6 +854,52 @@ function Checkout() {
               <Textarea id="obs" rows={2} value={form.observacoes}
                 onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
             </div>
+            {userId && cashbackSaldo > 0 && (
+              <div className="rounded-md border border-emerald-500/40 bg-emerald-500/5 p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-emerald-400">
+                  <Wallet className="h-4 w-4" />
+                  Usar cashback ({brl(cashbackSaldo)} disponível)
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    inputMode="decimal"
+                    placeholder="Ex: 10,00"
+                    value={cashbackInput}
+                    onChange={(e) => setCashbackInput(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCashbackInput(
+                        Math.min(cashbackSaldo, totalSemDesconto)
+                          .toFixed(2)
+                          .replace(".", ","),
+                      )
+                    }
+                  >
+                    Usar tudo
+                  </Button>
+                  {cashbackInput && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setCashbackInput("")}>
+                      Limpar
+                    </Button>
+                  )}
+                </div>
+                {parseMoneyLocal(cashbackInput) > 0 && cashbackPedido < parseMoneyLocal(cashbackInput) && (
+                  <p className="text-[11px] text-amber-400">
+                    Ajustado para {brl(cashbackPedido)} — limitado ao saldo/total.
+                  </p>
+                )}
+                {cashbackPedido >= totalSemDesconto && totalSemDesconto > 0 && (
+                  <p className="text-[11px] text-emerald-300">
+                    Seu cashback cobre o pedido inteiro! Total: <b>{brl(0)}</b>.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <aside className="bg-card border border-border rounded-xl p-4 h-fit space-y-4 md:sticky md:top-20">
@@ -851,6 +922,12 @@ function Checkout() {
                 </span>
                 <span>{isPickup ? "grátis" : detected ? brl(taxa) : "—"}</span>
               </div>
+              {cashbackPedido > 0 && (
+                <div className="flex justify-between text-emerald-400">
+                  <span>🎁 Cashback</span>
+                  <span>−{brl(cashbackPedido)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-base pt-1"><span>Total</span><span className="text-primary">{brl(total)}</span></div>
             </div>
             <Button type="submit" size="lg" className="w-full" disabled={submitting || lojaFechada || (!isPickup && (!form.bairro_id || !pontoConfirmado))}>
