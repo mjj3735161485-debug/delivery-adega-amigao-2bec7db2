@@ -204,7 +204,7 @@ function Checkout() {
   };
   const cashbackPedido = Math.max(
     0,
-    Math.min(parseMoneyLocal(cashbackInput), cashbackSaldo, totalSemDesconto),
+    Math.min(parseMoneyLocal(cashbackInput), cashbackSaldo, subtotal),
   );
   const total = Math.max(0, totalSemDesconto - cashbackPedido);
 
