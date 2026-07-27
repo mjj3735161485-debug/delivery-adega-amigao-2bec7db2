@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Calculator, CheckCircle2, Loader2, MapPin, RefreshCw, Store, Truck, XCircle } from "lucide-react";
+import { ArrowLeft, Calculator, CheckCircle2, Loader2, MapPin, RefreshCw, Store, Truck, Wallet, XCircle } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
@@ -94,6 +94,8 @@ function Checkout() {
   } | null>(null);
   const [pontoConfirmado, setPontoConfirmado] = useState(false);
   const [pinPos, setPinPos] = useState<{ lat: number; lng: number } | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [cashbackInput, setCashbackInput] = useState<string>("");
   const storeOpen = useStoreOpen();
   const lojaFechada = storeOpen.data ? !storeOpen.data.aberto : false;
 
@@ -166,6 +168,8 @@ function Checkout() {
     (async () => {
       const { data: sess } = await supabase.auth.getSession();
       if (!sess.session) return;
+      if (!mounted) return;
+      setUserId(sess.session.user.id);
       const { data: p } = await supabase
         .from("customer_profiles")
         .select("nome, telefone, endereco_padrao")
@@ -182,8 +186,27 @@ function Checkout() {
     return () => { mounted = false; };
   }, []);
 
+  const { data: cashbackSaldo = 0 } = useQuery({
+    queryKey: ["cashback-checkout", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_my_cashback_balance");
+      if (error) throw error;
+      return Number(data ?? 0);
+    },
+  });
+
   const taxa = isPickup ? 0 : (detected ? Number(detected.taxa) : 0);
-  const total = subtotal + taxa;
+  const totalSemDesconto = subtotal + taxa;
+  const parseMoneyLocal = (s: string) => {
+    const n = Number((s || "0").replace(/\./g, "").replace(",", "."));
+    return isFinite(n) ? n : 0;
+  };
+  const cashbackPedido = Math.max(
+    0,
+    Math.min(parseMoneyLocal(cashbackInput), cashbackSaldo, totalSemDesconto),
+  );
+  const total = Math.max(0, totalSemDesconto - cashbackPedido);
 
   function focusEndereco() {
     setTimeout(() => document.getElementById("end")?.focus(), 50);
@@ -426,6 +449,7 @@ function Checkout() {
           total: String(total),
           destino_lat,
           destino_lng,
+          cashback_usar: cashbackPedido > 0 ? String(cashbackPedido) : "",
         },
         _items: items.map((it) => ({
           product_id: it.id,
