@@ -874,7 +874,7 @@ function Checkout() {
                     size="sm"
                     onClick={() =>
                       setCashbackInput(
-                        Math.min(cashbackSaldo, totalSemDesconto)
+                        Math.min(cashbackSaldo, subtotal)
                           .toFixed(2)
                           .replace(".", ","),
                       )
@@ -890,12 +890,12 @@ function Checkout() {
                 </div>
                 {parseMoneyLocal(cashbackInput) > 0 && cashbackPedido < parseMoneyLocal(cashbackInput) && (
                   <p className="text-[11px] text-amber-400">
-                    Ajustado para {brl(cashbackPedido)} — limitado ao saldo/total.
+                    Ajustado para {brl(cashbackPedido)} — limitado ao saldo e ao subtotal (não desconta a taxa de entrega).
                   </p>
                 )}
-                {cashbackPedido >= totalSemDesconto && totalSemDesconto > 0 && (
+                {cashbackPedido >= subtotal && subtotal > 0 && (
                   <p className="text-[11px] text-emerald-300">
-                    Seu cashback cobre o pedido inteiro! Total: <b>{brl(0)}</b>.
+                    Seu cashback cobre os produtos! {taxa > 0 ? <>Você paga só a taxa de entrega: <b>{brl(taxa)}</b>.</> : <>Total: <b>{brl(0)}</b>.</>}
                   </p>
                 )}
               </div>
