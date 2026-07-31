@@ -473,11 +473,12 @@ function NaoClassificados() {
                     <SelectValue placeholder="Mover para..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories
-                      .filter((c) => c.id !== FALLBACK_CATEGORY_ID)
-                      .map((c) => (
-                        <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                      ))}
+                    {categories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.nome}
+                        {c.id === FALLBACK_CATEGORY_ID ? " (manter)" : ""}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Button
