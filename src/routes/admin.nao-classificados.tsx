@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, EyeOff, Sparkles, X, Zap } from "lucide-react";
+import { Check, EyeOff, Sparkles, Trash2, X, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGuard } from "@/lib/useAdminGuard";
 import { AdminNav } from "@/components/AdminNav";
@@ -282,6 +282,16 @@ function NaoClassificados() {
     if (error) return toast.error(error.message);
     toast.success("Produto ocultado");
     qc.invalidateQueries({ queryKey: ["admin", "products", "fallback"] });
+    qc.invalidateQueries({ queryKey: ["products"] });
+  }
+
+  async function excluir(p: Product) {
+    if (!window.confirm(`Excluir definitivamente "${p.nome}"?`)) return;
+    const { error } = await supabase.from("products").delete().eq("id", p.id);
+    if (error) return toast.error(error.message);
+    toast.success("Produto excluído");
+    qc.invalidateQueries({ queryKey: ["admin", "products", "fallback"] });
+    qc.invalidateQueries({ queryKey: ["admin", "products", "copao-combos"] });
     qc.invalidateQueries({ queryKey: ["products"] });
   }
 
