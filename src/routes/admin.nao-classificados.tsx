@@ -129,12 +129,18 @@ function NaoClassificados() {
 
   // IDs das categorias Copão e Combos (para revisão cruzada)
   const copaoCombosIds = useMemo(() => {
+    return categories
+      .filter((c) => {
+        const n = c.nome.toLowerCase();
+        return n === "copão" || n === "copao" || n === "combos";
+      })
+      .map((c) => c.id);
+  }, [categories]);
+
+  const catNameById = useMemo(() => {
     const ids: string[] = [];
-    for (const c of categories) {
-      const n = c.nome.toLowerCase();
-      if (n === "copão" || n === "copao" || n === "combos") ids.push(c.id);
-    }
-    return ids;
+    void ids;
+    return new Map(categories.map((c) => [c.id, c.nome]));
   }, [categories]);
 
   const { data: reviewProducts = [] } = useQuery({
@@ -425,6 +431,9 @@ function NaoClassificados() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{p.nome}</p>
                   <div className="flex items-center gap-2 mt-0.5">
+                    <Badge variant="outline" className="text-[10px] py-0 h-4 border-border text-muted-foreground">
+                      {(p.category_id ? catNameById.get(p.category_id) : null) ?? "Sem categoria"}
+                    </Badge>
                     {origin === "review" && currentName && (
                       <Badge variant="outline" className="text-[10px] py-0 h-4 border-sky-500/30 bg-sky-500/10 text-sky-500">
                         {currentName} →
@@ -480,6 +489,15 @@ function NaoClassificados() {
                   title="Ocultar do site"
                 >
                   <EyeOff className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-9 px-2 text-destructive hover:text-destructive"
+                  onClick={() => excluir(p)}
+                  title="Excluir produto"
+                >
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
               );
