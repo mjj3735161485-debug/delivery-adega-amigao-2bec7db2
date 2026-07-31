@@ -292,7 +292,6 @@ function NaoClassificados() {
   }
 
   async function excluir(p: Product) {
-    if (!window.confirm(`Excluir definitivamente "${p.nome}"?`)) return;
     const { error } = await supabase.from("products").delete().eq("id", p.id);
     if (error) return toast.error(error.message);
     toast.success("Produto excluído");
