@@ -1,47 +1,66 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getOrdersApiBaseUrl, ORDERS_ENDPOINT } from "@/lib/api-config";
 
 export type NotifyOrderInput = {
   nome: string;
-  itens: Array<{ nome: string; quantidade: number; preco: number }>;
-  valor: number;
-  endereco: string;
   telefone: string;
-  tempo?: string;
-  mensagem?: string;
+  endereco: string;
+  /** Valor total formatado sem o prefixo R$ (ex.: "150,00") */
+  valor: string;
+  tempo: string;
+  itens: Array<{ nome: string; quantidade: number }>;
 };
 
 export const notifyOrder = createServerFn({ method: "POST" })
   .inputValidator((input: NotifyOrderInput) => {
     if (!input || typeof input !== "object") throw new Error("Payload inválido");
-    if (!input.nome || !input.telefone) throw new Error("Dados obrigatórios ausentes");
-    if (!Array.isArray(input.itens)) throw new Error("Itens inválidos");
+    if (!input.nome?.trim()) throw new Error("Nome obrigatório");
+    if (!input.telefone?.trim()) throw new Error("Telefone obrigatório");
+    if (!input.endereco?.trim()) throw new Error("Endereço obrigatório");
+    if (!Array.isArray(input.itens) || input.itens.length === 0)
+      throw new Error("Carrinho vazio");
     return input;
   })
   .handler(async ({ data }) => {
-    const base = process.env.API_URL;
-    if (!base) {
-      return { ok: false, error: "API_URL não configurada" as const };
-    }
-    const url = `${base.replace(/\/+$/, "")}/pedido`;
+    const url = `${getOrdersApiBaseUrl()}${ORDERS_ENDPOINT}`;
     try {
       const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
         body: JSON.stringify({
           nome: data.nome,
           telefone: data.telefone,
           endereco: data.endereco,
           valor: data.valor,
-          itens: data.itens,
-          mensagem: data.mensagem,
+          tempo: data.tempo,
+          itens: data.itens.map((i) => ({
+            nome: i.nome,
+            quantidade: i.quantidade,
+          })),
         }),
       });
       const text = await res.text();
+      let json: any = null;
+      try {
+        json = JSON.parse(text);
+      } catch {}
       if (!res.ok) {
-        return { ok: false, error: `HTTP ${res.status}: ${text.slice(0, 200)}` };
+        return { ok: false as const, error: `HTTP ${res.status}` };
       }
-      return { ok: true, response: text.slice(0, 500) };
+      if (!json || json.sucesso !== true) {
+        return {
+          ok: false as const,
+          error: json?.mensagem || "A API não confirmou o pedido",
+        };
+      }
+      return { ok: true as const, response: text.slice(0, 500) };
     } catch (err) {
-      return { ok: false, error: err instanceof Error ? err.message : "Falha de rede" };
+      return {
+        ok: false as const,
+        error: err instanceof Error ? err.message : "Falha de rede",
+      };
     }
   });
