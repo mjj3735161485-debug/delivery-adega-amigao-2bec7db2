@@ -496,7 +496,8 @@ function Checkout() {
       const wa = `https://wa.me/${settings?.whatsapp ?? ""}?text=${encodeURIComponent(mensagem)}`;
       window.open(wa, "_blank");
 
-      // Notifica a API WhatsApp externa (POST ${API_URL}/pedido)
+      // Notifica a API de pedidos do WhatsApp (POST /pedido)
+      let notified = false;
       try {
         const result = await notifyOrder({
           data: {
@@ -505,26 +506,28 @@ function Checkout() {
             endereco: isPickup
               ? "Retirada na loja"
               : `${(parsed.data as z.infer<typeof deliverySchema>).endereco} — ${detected?.bairro ?? ""}`,
-            valor: Number(total),
-            tempo: isPickup ? "20 minutos" : "40 minutos",
+            valor: brl(Number(total)).replace(/^R\$\s*/, ""),
+            tempo: "40 minutos",
             itens: items.map((i) => ({
               nome: i.nome,
               quantidade: i.quantidade,
-              preco: i.preco,
             })),
-            mensagem,
           },
         });
-        if (result.ok) {
-          toast.success("Pedido enviado com sucesso!");
-        } else {
-          toast.warning(`Pedido salvo, mas falha ao notificar API: ${result.error}`);
-        }
+        notified = result.ok === true;
+        if (!notified) console.error("notifyOrder", result.error);
       } catch (notifyErr) {
         console.error("notifyOrder", notifyErr);
-        toast.warning("Pedido salvo, mas falha ao notificar API externa.");
       }
 
+      if (!notified) {
+        toast.error(
+          "Não conseguimos enviar seu pedido para a loja. Seu carrinho foi mantido — tente novamente em instantes.",
+        );
+        return;
+      }
+
+      toast.success(`Pedido #${order.numero} enviado com sucesso! 🎉`);
       clear();
       navigate({
         to: "/pedido/$numero",
