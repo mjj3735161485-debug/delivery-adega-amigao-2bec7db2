@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getOrdersApiBaseUrl } from "@/lib/api-config";
 
 export type NotifyStatusInput = {
   telefone: string;
@@ -11,13 +12,14 @@ export const notifyStatus = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }) => {
-    const base = process.env.API_URL;
-    if (!base) return { ok: false, error: "API_URL não configurada" as const };
-    const url = `${base.replace(/\/+$/, "")}/status-pedido`;
+    const url = `${getOrdersApiBaseUrl()}/status-pedido`;
     try {
       const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
         body: JSON.stringify({
           telefone: data.telefone,
           statusPedido: data.statusPedido,
