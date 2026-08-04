@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Search } from "lucide-react";
@@ -72,6 +72,10 @@ function Home() {
   const [q, setQ] = useState("");
   const [visibleCount, setVisibleCount] = useState(48);
   const [onlyPromos, setOnlyPromos] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState<boolean | null>(null);
+  useEffect(() => {
+    setAgeConfirmed(sessionStorage.getItem("age-confirmed") === "true");
+  }, []);
   const { add } = useCart();
 
   const { data: categories = [] } = useQuery({
@@ -120,18 +124,54 @@ function Home() {
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
+      if (p.preco <= 0) return false;
       if (onlyPromos && !p.destaque) return false;
       if (cat !== "todos" && p.category_id) {
         const c = categories.find((x) => x.id === p.category_id);
         if (!c || c.slug !== cat) return false;
       }
-      if (q.trim() && !p.nome.toLowerCase().includes(q.trim().toLowerCase())) return false;
+      if (q.trim()) {
+        const normalize = (value: string) =>
+          value
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
+        if (!normalize(p.nome).includes(normalize(q.trim()))) return false;
+      }
       return true;
     });
   }, [products, categories, cat, q, onlyPromos]);
 
   return (
     <div className="min-h-screen">
+      {ageConfirmed === false && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 p-4 backdrop-blur-md">
+          {" "}
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-2xl">
+            {" "}
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Consumo responsável</p>{" "}
+            <h2 className="mt-3 font-display text-3xl font-bold">Você tem 18 anos ou mais?</h2>{" "}
+            <p className="mt-3 text-sm text-muted-foreground">
+              {" "}
+              A venda de bebidas alcoólicas é proibida para menores de 18 anos.{" "}
+            </p>{" "}
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              {" "}
+              <Button variant="outline" onClick={() => window.history.back()}>
+                Não
+              </Button>{" "}
+              <Button
+                onClick={() => {
+                  sessionStorage.setItem("age-confirmed", "true");
+                  setAgeConfirmed(true);
+                }}
+              >
+                Sim, tenho 18+
+              </Button>{" "}
+            </div>{" "}
+          </div>{" "}
+        </div>
+      )}{" "}
       <SiteHeader />
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border">
