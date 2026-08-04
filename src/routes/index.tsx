@@ -36,7 +36,11 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Adega Amigão — Delivery de Bebidas Geladas" },
-      { name: "description", content: "Cervejas, vinhos, destilados e drinks entregues geladinhos na sua casa. Peça na Adega Amigão e confirme pelo WhatsApp." },
+      {
+        name: "description",
+        content:
+          "Cervejas, vinhos, destilados e drinks entregues geladinhos na sua casa. Peça na Adega Amigão e confirme pelo WhatsApp.",
+      },
       { property: "og:title", content: "Adega Amigão — Delivery de Bebidas Geladas" },
       { property: "og:description", content: "Catálogo completo de cervejas, vinhos e destilados com entrega rápida." },
       { property: "og:url", content: "https://sip-n-serve-bot.lovable.app/" },
@@ -59,24 +63,20 @@ export const Route = createFileRoute("/")({
     ],
   }),
   errorComponent: ({ error }) => (
-    <div className="p-8 text-center text-muted-foreground">
-      Não foi possível carregar o catálogo. {error.message}
-    </div>
+    <div className="p-8 text-center text-muted-foreground">Não foi possível carregar o catálogo. {error.message}</div>
   ),
 });
 
 function Home() {
   const [cat, setCat] = useState<string>("todos");
   const [q, setQ] = useState("");
+  const [visibleCount, setVisibleCount] = useState(48);
   const { add } = useCart();
 
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("*")
-        .order("ordem");
+      const { data, error } = await supabase.from("categories").select("*").order("ordem");
       if (error) throw error;
       return data as Category[];
     },
@@ -131,7 +131,6 @@ function Home() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border">
         <img
@@ -143,28 +142,23 @@ function Home() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/70 to-background" />
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-28">
-          <p className="uppercase tracking-[0.3em] text-xs text-primary mb-4">
-            Delivery de bebidas
-          </p>
+          <p className="uppercase tracking-[0.3em] text-xs text-primary mb-4">Delivery de bebidas</p>
           <h1 className="font-display text-4xl sm:text-6xl font-bold max-w-2xl leading-[1.05]">
             Bebida gelada na sua porta em minutos.
           </h1>
           <p className="mt-4 max-w-lg text-muted-foreground">
-            Cervejas, vinhos, destilados e drinks prontos. Peça pelo site,
-            confirmamos no WhatsApp e entregamos rapidinho.
+            Cervejas, vinhos, destilados e drinks prontos. Peça pelo site, confirmamos no WhatsApp e entregamos
+            rapidinho.
           </p>
           <TodayHoursCard />
           {settings && typeof minTaxa === "number" && (
             <p className="mt-3 text-xs uppercase tracking-widest text-muted-foreground">
               Entrega a partir de {brl(minTaxa)}
-              {!settings.ativo && (
-                <span className="ml-3 text-destructive">· Loja desativada</span>
-              )}
+              {!settings.ativo && <span className="ml-3 text-destructive">· Loja desativada</span>}
             </p>
           )}
         </div>
       </section>
-
       {/* Filtros */}
       <section className="mx-auto max-w-6xl px-4 pt-8">
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -173,7 +167,10 @@ function Home() {
             <Input
               placeholder="Buscar bebida..."
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setVisibleCount(48);
+              }}
               className="pl-9"
             />
           </div>
@@ -182,7 +179,10 @@ function Home() {
           {[{ slug: "todos", nome: "Todos" }, ...categories].map((c) => (
             <button
               key={c.slug}
-              onClick={() => setCat(c.slug)}
+              onClick={() => {
+                setCat(c.slug);
+                setVisibleCount(48);
+              }}
               className={`shrink-0 rounded-full px-4 py-1.5 text-sm border transition ${
                 cat === c.slug
                   ? "bg-primary text-primary-foreground border-primary"
@@ -194,7 +194,6 @@ function Home() {
           ))}
         </div>
       </section>
-
       {/* Grade */}
       <section className="mx-auto max-w-6xl px-4 py-8">
         {isLoading ? (
@@ -204,12 +203,10 @@ function Home() {
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <p className="py-16 text-center text-muted-foreground">
-            Nenhum produto encontrado.
-          </p>
+          <p className="py-16 text-center text-muted-foreground">Nenhum produto encontrado.</p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.map((p) => (
+            {filtered.slice(0, visibleCount).map((p) => (
               <article
                 key={p.id}
                 className="group rounded-xl bg-card border border-border overflow-hidden flex flex-col hover:border-primary/50 transition"
@@ -225,13 +222,9 @@ function Home() {
                   )}
                 </div>
                 <div className="p-3 flex-1 flex flex-col">
-                  <h2 className="font-medium text-sm leading-tight line-clamp-2 min-h-10">
-                    {p.nome}
-                  </h2>
+                  <h2 className="font-medium text-sm leading-tight line-clamp-2 min-h-10">{p.nome}</h2>
                   <div className="mt-auto pt-3 flex items-center justify-between gap-2">
-                    <span className="font-display font-bold text-primary text-lg">
-                      {brl(p.preco)}
-                    </span>
+                    <span className="font-display font-bold text-primary text-lg">{brl(p.preco)}</span>
                     <Button
                       size="icon"
                       className="h-9 w-9 rounded-full"
@@ -255,10 +248,20 @@ function Home() {
           </div>
         )}
       </section>
-
+      {!isLoading && visibleCount < filtered.length && (
+        <div className="mx-auto max-w-6xl px-4 pb-8 flex justify-center">
+          {" "}
+          <Button variant="outline" onClick={() => setVisibleCount((count) => count + 48)}>
+            {" "}
+            Carregar mais produtos{" "}
+          </Button>{" "}
+        </div>
+      )}{" "}
       <footer className="border-t border-border mt-12 py-8 text-center text-xs text-muted-foreground">
         <p>Beba com responsabilidade. Venda proibida para menores de 18 anos.</p>
-        <p className="mt-2">© {new Date().getFullYear()} {settings?.nome ?? "Bar do Zé"}</p>
+        <p className="mt-2">
+          © {new Date().getFullYear()} {settings?.nome ?? "Bar do Zé"}
+        </p>
       </footer>
     </div>
   );
