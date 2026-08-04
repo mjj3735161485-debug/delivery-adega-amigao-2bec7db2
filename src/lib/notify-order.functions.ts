@@ -11,18 +11,46 @@ export type NotifyOrderInput = {
   itens: Array<{ nome: string; quantidade: number }>;
 };
 
+const REQUEST_TIMEOUT_MS = 12_000;
+const PHONE_PATTERN = /^\d{12,13}$/;
+const MONEY_PATTERN = /^\d{1,7},\d{2}$/;
+
+function requiredText(value: unknown, field: string, maxLength: number) {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new Error(`${field} obrigatório`);
+  }
+  const normalized = value.trim();
+  if (normalized.length > maxLength) {
+    throw new Error(`${field} muito longo`);
+  }
+  return normalized;
+}
+
 export const notifyOrder = createServerFn({ method: "POST" })
   .inputValidator((input: NotifyOrderInput) => {
     if (!input || typeof input !== "object") throw new Error("Payload inválido");
-    if (!input.nome?.trim()) throw new Error("Nome obrigatório");
-    if (!input.telefone?.trim()) throw new Error("Telefone obrigatório");
-    if (!input.endereco?.trim()) throw new Error("Endereço obrigatório");
-    if (!Array.isArray(input.itens) || input.itens.length === 0)
-      throw new Error("Carrinho vazio");
-    return input;
+    const nome = requiredText(input.nome, "Nome", 80);
+    const telefone = requiredText(input.telefone, "Telefone", 13).replace(/\D/g, "");
+    const endereco = requiredText(input.endereco, "Endereço", 300);
+    const valor = requiredText(input.valor, "Valor", 12);
+    const tempo = requiredText(input.tempo, "Tempo", 40);
+    if (!PHONE_PATTERN.test(telefone)) throw new Error("Telefone inválido");
+    if (!MONEY_PATTERN.test(valor)) throw new Error("Valor inválido");
+    if (!Array.isArray(input.itens) || input.itens.length === 0) throw new Error("Carrinho vazio");
+    if (input.itens.length > 100) throw new Error("Carrinho muito grande");
+    const itens = input.itens.map((item) => ({
+      nome: requiredText(item?.nome, "Nome do produto", 200),
+      quantidade: item?.quantidade,
+    }));
+    if (itens.some((item) => !Number.isInteger(item.quantidade) || item.quantidade < 1 || item.quantidade > 99)) {
+      throw new Error("Quantidade de produto inválida");
+    }
+    return { nome, telefone, endereco, valor, tempo, itens };
   })
   .handler(async ({ data }) => {
     const url = `${getOrdersApiBaseUrl()}${ORDERS_ENDPOINT}`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
       const res = await fetch(url, {
         method: "POST",
@@ -30,6 +58,7 @@ export const notifyOrder = createServerFn({ method: "POST" })
           "Content-Type": "application/json",
           "ngrok-skip-browser-warning": "true",
         },
+        signal: controller.signal,
         body: JSON.stringify({
           nome: data.nome,
           telefone: data.telefone,
@@ -43,24 +72,36 @@ export const notifyOrder = createServerFn({ method: "POST" })
         }),
       });
       const text = await res.text();
-      let json: any = null;
+      let json: unknown = null;
       try {
         json = JSON.parse(text);
-      } catch {}
+      } catch {
+        // Uma resposta não JSON é tratada abaixo como falha de confirmação.
+      }
       if (!res.ok) {
         return { ok: false as const, error: `HTTP ${res.status}` };
       }
-      if (!json || json.sucesso !== true) {
+      if (!json || typeof json !== "object" || !("sucesso" in json) || json.sucesso !== true) {
         return {
           ok: false as const,
-          error: json?.mensagem || "A API não confirmou o pedido",
+          error:
+            json && typeof json === "object" && "mensagem" in json && typeof json.mensagem === "string"
+              ? json.mensagem.slice(0, 200)
+              : "A API não confirmou o pedido",
         };
       }
       return { ok: true as const, response: text.slice(0, 500) };
     } catch (err) {
       return {
         ok: false as const,
-        error: err instanceof Error ? err.message : "Falha de rede",
+        error:
+          err instanceof Error && err.name === "AbortError"
+            ? "A API demorou demais para responder"
+            : err instanceof Error
+              ? err.message
+              : "Falha de rede",
       };
+    } finally {
+      clearTimeout(timeout);
     }
   });
