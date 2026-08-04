@@ -124,7 +124,6 @@ function Home() {
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
-      {p.imagem_url && (
       if (onlyPromos && !p.destaque) return false;
       if (cat !== "todos" && p.category_id) {
         const c = categories.find((x) => x.id === p.category_id);
