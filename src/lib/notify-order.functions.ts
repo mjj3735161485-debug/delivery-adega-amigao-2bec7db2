@@ -56,7 +56,7 @@ export const notifyOrder = createServerFn({ method: "POST" })
     return { nome, telefone, endereco, valor, tempo, itens };
   })
   .handler(async ({ data }) => {
-    const apiKey = typeof process !== "undefined" ? (process.env?.ORDERS_API_KEY ?? "") : "";
+    const apiKey = typeof process !== "undefined" ? process.env?.ORDERS_API_KEY ?? "" : "";
 
     const url = `${getOrdersApiBaseUrl()}${ORDERS_ENDPOINT}`;
     const controller = new AbortController();
