@@ -11,7 +11,7 @@ export type NotifyOrderInput = {
   itens: Array<{ nome: string; quantidade: number }>;
 };
 
-const REQUEST_TIMEOUT_MS = 12_000;
+const REQUEST_TIMEOUT_MS = 12_500;
 const PHONE_PATTERN = /^\d{12,13}$/;
 // Aceita tanto "150,00" quanto "1.234,50" (separador de milhar do pt-BR).
 const MONEY_PATTERN = /^\d{1,3}(\.\d{3})*,\d{2}$|^\d{1,10},\d{2}$/;
