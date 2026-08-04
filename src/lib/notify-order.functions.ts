@@ -56,6 +56,8 @@ export const notifyOrder = createServerFn({ method: "POST" })
     return { nome, telefone, endereco, valor, tempo, itens };
   })
   .handler(async ({ data }) => {
+    const apiKey = process.env.ORDERS_API_KEY;
+    if (!apiKey) return { ok: false as const, error: "Integração de pedidos não configurada" };
     const url = `${getOrdersApiBaseUrl()}${ORDERS_ENDPOINT}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -65,6 +67,7 @@ export const notifyOrder = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "ngrok-skip-browser-warning": "true",
+          "X-Orders-Api-Key": apiKey,
         },
         signal: controller.signal,
         body: JSON.stringify({
