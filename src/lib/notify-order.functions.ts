@@ -67,7 +67,7 @@ export const notifyOrder = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "ngrok-skip-browser-warning": "true",
-          "X-Orders-Api-Key": apiKey,
+          const apiKey = typeof process !== "undefined" ? process.env?.ORDERS_API_KEY ?? "" : "";
         },
         signal: controller.signal,
         body: JSON.stringify({
