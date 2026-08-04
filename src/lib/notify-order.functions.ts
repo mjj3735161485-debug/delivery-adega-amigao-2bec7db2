@@ -56,8 +56,6 @@ export const notifyOrder = createServerFn({ method: "POST" })
     return { nome, telefone, endereco, valor, tempo, itens };
   })
   .handler(async ({ data }) => {
-    const apiKey = typeof process !== "undefined" ? process.env?.ORDERS_API_KEY ?? "" : "";
-
     const url = `${getOrdersApiBaseUrl()}${ORDERS_ENDPOINT}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -67,7 +65,6 @@ export const notifyOrder = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "ngrok-skip-browser-warning": "true",
-          const apiKey = typeof process !== "undefined" ? process.env?.ORDERS_API_KEY ?? "" : "";
         },
         signal: controller.signal,
         body: JSON.stringify({
