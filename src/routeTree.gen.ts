@@ -9,70 +9,35 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as PedidosRouteImport } from './routes/pedidos'
-import { Route as MotoboyRouteImport } from './routes/motoboy'
-import { Route as MinhaContaRouteImport } from './routes/minha-conta'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as ContaRouteImport } from './routes/conta'
-import { Route as CheckoutRouteImport } from './routes/checkout'
-import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PedidoNumeroRouteImport } from './routes/pedido.$numero'
-import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
-import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
-import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
-import { Route as AdminNaoClassificadosRouteImport } from './routes/admin.nao-classificados'
-import { Route as AdminMotoboysRouteImport } from './routes/admin.motoboys'
-import { Route as AdminHorariosRouteImport } from './routes/admin.horarios'
-import { Route as AdminExportarRouteImport } from './routes/admin.exportar'
-import { Route as AdminEntregasRouteImport } from './routes/admin.entregas'
-import { Route as AdminConfigRouteImport } from './routes/admin.config'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ContaRouteImport } from './routes/conta'
+import { Route as McpRouteImport } from './routes/mcp'
+import { Route as MinhaContaRouteImport } from './routes/minha-conta'
+import { Route as MotoboyRouteImport } from './routes/motoboy'
+import { Route as PedidosRouteImport } from './routes/pedidos'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
-import { Route as AdminMotoboysIdRouteImport } from './routes/admin.motoboys.$id'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AdminConfigRouteImport } from './routes/admin.config'
+import { Route as AdminEntregasRouteImport } from './routes/admin.entregas'
+import { Route as AdminExportarRouteImport } from './routes/admin.exportar'
+import { Route as AdminHorariosRouteImport } from './routes/admin.horarios'
+import { Route as AdminMotoboysRouteImport } from './routes/admin.motoboys'
+import { Route as AdminNaoClassificadosRouteImport } from './routes/admin.nao-classificados'
+import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
+import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
+import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
+import { Route as PedidoNumeroRouteImport } from './routes/pedido.$numero'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as AdminMotoboysIdRouteImport } from './routes/admin.motoboys.$id'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PedidosRoute = PedidosRouteImport.update({
-  id: '/pedidos',
-  path: '/pedidos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MotoboyRoute = MotoboyRouteImport.update({
-  id: '/motoboy',
-  path: '/motoboy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MinhaContaRoute = MinhaContaRouteImport.update({
-  id: '/minha-conta',
-  path: '/minha-conta',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContaRoute = ContaRouteImport.update({
-  id: '/conta',
-  path: '/conta',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -80,49 +45,61 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PedidoNumeroRoute = PedidoNumeroRouteImport.update({
-  id: '/pedido/$numero',
-  path: '/pedido/$numero',
+const ContaRoute = ContaRouteImport.update({
+  id: '/conta',
+  path: '/conta',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
-  id: '/admin/usuarios',
-  path: '/admin/usuarios',
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminProdutosRoute = AdminProdutosRouteImport.update({
-  id: '/admin/produtos',
-  path: '/admin/produtos',
+const MinhaContaRoute = MinhaContaRouteImport.update({
+  id: '/minha-conta',
+  path: '/minha-conta',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminPedidosRoute = AdminPedidosRouteImport.update({
-  id: '/admin/pedidos',
-  path: '/admin/pedidos',
+const MotoboyRoute = MotoboyRouteImport.update({
+  id: '/motoboy',
+  path: '/motoboy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminNaoClassificadosRoute = AdminNaoClassificadosRouteImport.update({
-  id: '/admin/nao-classificados',
-  path: '/admin/nao-classificados',
+const PedidosRoute = PedidosRouteImport.update({
+  id: '/pedidos',
+  path: '/pedidos',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminMotoboysRoute = AdminMotoboysRouteImport.update({
-  id: '/admin/motoboys',
-  path: '/admin/motoboys',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminHorariosRoute = AdminHorariosRouteImport.update({
-  id: '/admin/horarios',
-  path: '/admin/horarios',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminExportarRoute = AdminExportarRouteImport.update({
-  id: '/admin/exportar',
-  path: '/admin/exportar',
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AdminConfigRoute = AdminConfigRouteImport.update({
+  id: '/admin/config',
+  path: '/admin/config',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminEntregasRoute = AdminEntregasRouteImport.update({
@@ -130,27 +107,50 @@ const AdminEntregasRoute = AdminEntregasRouteImport.update({
   path: '/admin/entregas',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminConfigRoute = AdminConfigRouteImport.update({
-  id: '/admin/config',
-  path: '/admin/config',
+const AdminExportarRoute = AdminExportarRouteImport.update({
+  id: '/admin/exportar',
+  path: '/admin/exportar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const AdminMotoboysIdRoute = AdminMotoboysIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AdminMotoboysRoute,
+const AdminHorariosRoute = AdminHorariosRouteImport.update({
+  id: '/admin/horarios',
+  path: '/admin/horarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminMotoboysRoute = AdminMotoboysRouteImport.update({
+  id: '/admin/motoboys',
+  path: '/admin/motoboys',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminNaoClassificadosRoute = AdminNaoClassificadosRouteImport.update({
+  id: '/admin/nao-classificados',
+  path: '/admin/nao-classificados',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPedidosRoute = AdminPedidosRouteImport.update({
+  id: '/admin/pedidos',
+  path: '/admin/pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminProdutosRoute = AdminProdutosRouteImport.update({
+  id: '/admin/produtos',
+  path: '/admin/produtos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
+  id: '/admin/usuarios',
+  path: '/admin/usuarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PedidoNumeroRoute = PedidoNumeroRouteImport.update({
+  id: '/pedido/$numero',
+  path: '/pedido/$numero',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
@@ -158,10 +158,10 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
-const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
-  id: '/.lovable/oauth/consent',
-  path: '/.lovable/oauth/consent',
-  getParentRoute: () => rootRouteImport,
+const AdminMotoboysIdRoute = AdminMotoboysIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminMotoboysRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -359,60 +359,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pedidos': {
-      id: '/pedidos'
-      path: '/pedidos'
-      fullPath: '/pedidos'
-      preLoaderRoute: typeof PedidosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/motoboy': {
-      id: '/motoboy'
-      path: '/motoboy'
-      fullPath: '/motoboy'
-      preLoaderRoute: typeof MotoboyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/minha-conta': {
-      id: '/minha-conta'
-      path: '/minha-conta'
-      fullPath: '/minha-conta'
-      preLoaderRoute: typeof MinhaContaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/conta': {
-      id: '/conta'
-      path: '/conta'
-      fullPath: '/conta'
-      preLoaderRoute: typeof ContaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -422,88 +373,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/pedido/$numero': {
-      id: '/pedido/$numero'
-      path: '/pedido/$numero'
-      fullPath: '/pedido/$numero'
-      preLoaderRoute: typeof PedidoNumeroRouteImport
+    '/conta': {
+      id: '/conta'
+      path: '/conta'
+      fullPath: '/conta'
+      preLoaderRoute: typeof ContaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/usuarios': {
-      id: '/admin/usuarios'
-      path: '/admin/usuarios'
-      fullPath: '/admin/usuarios'
-      preLoaderRoute: typeof AdminUsuariosRouteImport
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/produtos': {
-      id: '/admin/produtos'
-      path: '/admin/produtos'
-      fullPath: '/admin/produtos'
-      preLoaderRoute: typeof AdminProdutosRouteImport
+    '/minha-conta': {
+      id: '/minha-conta'
+      path: '/minha-conta'
+      fullPath: '/minha-conta'
+      preLoaderRoute: typeof MinhaContaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/pedidos': {
-      id: '/admin/pedidos'
-      path: '/admin/pedidos'
-      fullPath: '/admin/pedidos'
-      preLoaderRoute: typeof AdminPedidosRouteImport
+    '/motoboy': {
+      id: '/motoboy'
+      path: '/motoboy'
+      fullPath: '/motoboy'
+      preLoaderRoute: typeof MotoboyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/nao-classificados': {
-      id: '/admin/nao-classificados'
-      path: '/admin/nao-classificados'
-      fullPath: '/admin/nao-classificados'
-      preLoaderRoute: typeof AdminNaoClassificadosRouteImport
+    '/pedidos': {
+      id: '/pedidos'
+      path: '/pedidos'
+      fullPath: '/pedidos'
+      preLoaderRoute: typeof PedidosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/motoboys': {
-      id: '/admin/motoboys'
-      path: '/admin/motoboys'
-      fullPath: '/admin/motoboys'
-      preLoaderRoute: typeof AdminMotoboysRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/horarios': {
-      id: '/admin/horarios'
-      path: '/admin/horarios'
-      fullPath: '/admin/horarios'
-      preLoaderRoute: typeof AdminHorariosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/exportar': {
-      id: '/admin/exportar'
-      path: '/admin/exportar'
-      fullPath: '/admin/exportar'
-      preLoaderRoute: typeof AdminExportarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/entregas': {
-      id: '/admin/entregas'
-      path: '/admin/entregas'
-      fullPath: '/admin/entregas'
-      preLoaderRoute: typeof AdminEntregasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/config': {
-      id: '/admin/config'
-      path: '/admin/config'
-      fullPath: '/admin/config'
-      preLoaderRoute: typeof AdminConfigRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/list-tools': {
@@ -513,18 +436,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/motoboys/$id': {
-      id: '/admin/motoboys/$id'
-      path: '/$id'
-      fullPath: '/admin/motoboys/$id'
-      preLoaderRoute: typeof AdminMotoboysIdRouteImport
-      parentRoute: typeof AdminMotoboysRoute
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+    '/admin/config': {
+      id: '/admin/config'
+      path: '/admin/config'
+      fullPath: '/admin/config'
+      preLoaderRoute: typeof AdminConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/entregas': {
+      id: '/admin/entregas'
+      path: '/admin/entregas'
+      fullPath: '/admin/entregas'
+      preLoaderRoute: typeof AdminEntregasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/exportar': {
+      id: '/admin/exportar'
+      path: '/admin/exportar'
+      fullPath: '/admin/exportar'
+      preLoaderRoute: typeof AdminExportarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/horarios': {
+      id: '/admin/horarios'
+      path: '/admin/horarios'
+      fullPath: '/admin/horarios'
+      preLoaderRoute: typeof AdminHorariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/motoboys': {
+      id: '/admin/motoboys'
+      path: '/admin/motoboys'
+      fullPath: '/admin/motoboys'
+      preLoaderRoute: typeof AdminMotoboysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/nao-classificados': {
+      id: '/admin/nao-classificados'
+      path: '/admin/nao-classificados'
+      fullPath: '/admin/nao-classificados'
+      preLoaderRoute: typeof AdminNaoClassificadosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/pedidos': {
+      id: '/admin/pedidos'
+      path: '/admin/pedidos'
+      fullPath: '/admin/pedidos'
+      preLoaderRoute: typeof AdminPedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/produtos': {
+      id: '/admin/produtos'
+      path: '/admin/produtos'
+      fullPath: '/admin/produtos'
+      preLoaderRoute: typeof AdminProdutosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/usuarios': {
+      id: '/admin/usuarios'
+      path: '/admin/usuarios'
+      fullPath: '/admin/usuarios'
+      preLoaderRoute: typeof AdminUsuariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pedido/$numero': {
+      id: '/pedido/$numero'
+      path: '/pedido/$numero'
+      fullPath: '/pedido/$numero'
+      preLoaderRoute: typeof PedidoNumeroRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.lovable/oauth/consent': {
@@ -533,6 +519,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/.lovable/oauth/consent'
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/motoboys/$id': {
+      id: '/admin/motoboys/$id'
+      path: '/$id'
+      fullPath: '/admin/motoboys/$id'
+      preLoaderRoute: typeof AdminMotoboysIdRouteImport
+      parentRoute: typeof AdminMotoboysRoute
     }
   }
 }
