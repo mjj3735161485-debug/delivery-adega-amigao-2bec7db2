@@ -57,7 +57,7 @@ export const notifyOrder = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const apiKey = process.env.ORDERS_API_KEY || "";
-    "X-Orders-Api-Key": apiKey ?? "",
+
     const url = `${getOrdersApiBaseUrl()}${ORDERS_ENDPOINT}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
