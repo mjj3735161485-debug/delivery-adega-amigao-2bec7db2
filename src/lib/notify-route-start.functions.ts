@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getOrdersApiBaseUrl } from "@/lib/api-config";
 
 export type NotifyRouteStartInput = {
   telefone: string;
@@ -14,8 +15,7 @@ export const notifyRouteStart = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }) => {
-    const base = process.env.API_URL;
-    if (!base) return { ok: false, error: "API_URL não configurada" as const };
+    const root = getOrdersApiBaseUrl();
 
     const nome = data.nome?.split(" ")[0] ?? "cliente";
     const etaTxt = data.eta_min ? ` Chegada estimada em ~${data.eta_min} min.` : "";
@@ -33,7 +33,6 @@ export const notifyRouteStart = createServerFn({ method: "POST" })
       evento: "rota_iniciada" as const,
     };
 
-    const root = base.replace(/\/+$/, "");
     // Envia para o endpoint dedicado e faz fallback para /status-pedido
     const endpoints = [`${root}/rota-iniciada`, `${root}/status-pedido`];
     let lastError = "";
@@ -41,7 +40,10 @@ export const notifyRouteStart = createServerFn({ method: "POST" })
       try {
         const res = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
           body: JSON.stringify(payload),
         });
         const text = await res.text();
