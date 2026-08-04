@@ -13,7 +13,8 @@ export type NotifyOrderInput = {
 
 const REQUEST_TIMEOUT_MS = 12_000;
 const PHONE_PATTERN = /^\d{12,13}$/;
-const MONEY_PATTERN = /^\d{1,7},\d{2}$/;
+// Aceita tanto "150,00" quanto "1.234,50" (separador de milhar do pt-BR).
+const MONEY_PATTERN = /^\d{1,3}(\.\d{3})*,\d{2}$|^\d{1,10},\d{2}$/;
 
 function requiredText(value: unknown, field: string, maxLength: number) {
   if (typeof value !== "string" || !value.trim()) {
@@ -26,13 +27,20 @@ function requiredText(value: unknown, field: string, maxLength: number) {
   return normalized;
 }
 
+function trimmedText(value: unknown, field: string, maxLength: number) {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new Error(`${field} obrigatório`);
+  }
+  return value.trim().slice(0, maxLength);
+}
+
 export const notifyOrder = createServerFn({ method: "POST" })
   .inputValidator((input: NotifyOrderInput) => {
     if (!input || typeof input !== "object") throw new Error("Payload inválido");
     const nome = requiredText(input.nome, "Nome", 80);
     const telefone = requiredText(input.telefone, "Telefone", 13).replace(/\D/g, "");
-    const endereco = requiredText(input.endereco, "Endereço", 300);
-    const valor = requiredText(input.valor, "Valor", 12);
+    const endereco = trimmedText(input.endereco, "Endereço", 350);
+    const valor = requiredText(input.valor, "Valor", 16);
     const tempo = requiredText(input.tempo, "Tempo", 40);
     if (!PHONE_PATTERN.test(telefone)) throw new Error("Telefone inválido");
     if (!MONEY_PATTERN.test(valor)) throw new Error("Valor inválido");
