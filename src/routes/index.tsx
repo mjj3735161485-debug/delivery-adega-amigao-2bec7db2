@@ -71,6 +71,7 @@ function Home() {
   const [cat, setCat] = useState<string>("todos");
   const [q, setQ] = useState("");
   const [visibleCount, setVisibleCount] = useState(48);
+  const [onlyPromos, setOnlyPromos] = useState(false);
   const { add } = useCart();
 
   const { data: categories = [] } = useQuery({
@@ -119,6 +120,7 @@ function Home() {
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
+      if (onlyPromos && !p.destaque) return false;
       if (cat !== "todos" && p.category_id) {
         const c = categories.find((x) => x.id === p.category_id);
         if (!c || c.slug !== cat) return false;
@@ -126,7 +128,7 @@ function Home() {
       if (q.trim() && !p.nome.toLowerCase().includes(q.trim().toLowerCase())) return false;
       return true;
     });
-  }, [products, categories, cat, q]);
+  }, [products, categories, cat, q, onlyPromos]);
 
   return (
     <div className="min-h-screen">
@@ -224,11 +226,25 @@ function Home() {
                 </p>
               )}{" "}
             </div>{" "}
+            <Button
+              variant="outline"
+              className="mt-4 w-full border-primary/40 font-semibold"
+              onClick={() => {
+                setOnlyPromos(true);
+                setCat("todos");
+                setQ("");
+                setVisibleCount(48);
+                setTimeout(() => document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" }), 0);
+              }}
+            >
+              {" "}
+              Ver todas as promoções{" "}
+            </Button>{" "}
           </aside>{" "}
         </div>{" "}
       </section>
       {/* Filtros */}
-      <section className="mx-auto max-w-6xl px-4 pt-8">
+      <section id="catalogo" className="mx-auto max-w-6xl px-4 pt-8">
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -237,6 +253,7 @@ function Home() {
               value={q}
               onChange={(e) => {
                 setQ(e.target.value);
+                setOnlyPromos(false);
                 setVisibleCount(48);
               }}
               className="pl-9"
@@ -249,6 +266,7 @@ function Home() {
               key={c.slug}
               onClick={() => {
                 setCat(c.slug);
+                setOnlyPromos(false);
                 setVisibleCount(48);
               }}
               className={`shrink-0 rounded-full px-4 py-1.5 text-sm border transition ${
