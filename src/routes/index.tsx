@@ -206,7 +206,7 @@ function Home() {
                       aria-label={"Adicionar " + product.nome + " ao carrinho"}
                       onClick={() => {
                         add({
-                          product_id: product.id,
+                          id: product.id,
                           nome: product.nome,
                           preco: product.preco,
                           imagem_url: product.imagem_url,
