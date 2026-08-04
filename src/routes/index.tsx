@@ -141,23 +141,91 @@ function Home() {
           className="absolute inset-0 h-full w-full object-cover opacity-45"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/70 to-background" />
-        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-28">
-          <p className="uppercase tracking-[0.3em] text-xs text-primary mb-4">Delivery de bebidas</p>
-          <h1 className="font-display text-4xl sm:text-6xl font-bold max-w-2xl leading-[1.05]">
-            Bebida gelada na sua porta em minutos.
-          </h1>
-          <p className="mt-4 max-w-lg text-muted-foreground">
-            Cervejas, vinhos, destilados e drinks prontos. Peça pelo site, confirmamos no WhatsApp e entregamos
-            rapidinho.
-          </p>
-          <TodayHoursCard />
-          {settings && typeof minTaxa === "number" && (
-            <p className="mt-3 text-xs uppercase tracking-widest text-muted-foreground">
-              Entrega a partir de {brl(minTaxa)}
-              {!settings.ativo && <span className="ml-3 text-destructive">· Loja desativada</span>}
+        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-28 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
+          <div>
+            <p className="uppercase tracking-[0.3em] text-xs text-primary mb-4">Delivery de bebidas</p>
+            <h1 className="font-display text-4xl sm:text-6xl font-bold max-w-2xl leading-[1.05]">
+              Bebida gelada na sua porta em minutos.
+            </h1>
+            <p className="mt-4 max-w-lg text-muted-foreground">
+              Cervejas, vinhos, destilados e drinks prontos. Peça pelo site, confirmamos no WhatsApp e entregamos
+              rapidinho.
             </p>
-          )}
-        </div>
+            <TodayHoursCard />
+            {settings && typeof minTaxa === "number" && (
+              <p className="mt-3 text-xs uppercase tracking-widest text-muted-foreground">
+                Entrega a partir de {brl(minTaxa)}
+                {!settings.ativo && <span className="ml-3 text-destructive">· Loja desativada</span>}
+              </p>
+            )}
+          </div>
+          <aside className="rounded-2xl border border-primary/30 bg-card/90 p-5 shadow-xl backdrop-blur-sm">
+            {" "}
+            <div className="mb-4 flex items-center justify-between gap-3">
+              {" "}
+              <div>
+                {" "}
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Ofertas especiais</p>{" "}
+                <h2 className="mt-1 font-display text-2xl font-bold">Promoções em destaque</h2>{" "}
+              </div>{" "}
+              <span className="rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
+                PROMO
+              </span>{" "}
+            </div>{" "}
+            <div className="space-y-3">
+              {" "}
+              {products
+                .filter((product) => product.destaque)
+                .slice(0, 2)
+                .map((product) => (
+                  <div
+                    key={product.id}
+                    className="flex items-center gap-3 rounded-xl border border-border bg-background/80 p-3"
+                  >
+                    {" "}
+                    {product.imagem_url ? (
+                      <img
+                        src={product.imagem_url}
+                        alt={product.nome}
+                        loading="lazy"
+                        className="h-14 w-14 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="h-14 w-14 rounded-lg bg-muted" />
+                    )}{" "}
+                    <div className="min-w-0 flex-1">
+                      {" "}
+                      <p className="line-clamp-2 text-sm font-medium">{product.nome}</p>{" "}
+                      <p className="mt-1 font-display font-bold text-primary">{brl(product.preco)}</p>{" "}
+                    </div>{" "}
+                    <Button
+                      size="icon"
+                      className="h-9 w-9 shrink-0 rounded-full"
+                      aria-label={"Adicionar " + product.nome + " ao carrinho"}
+                      onClick={() => {
+                        add({
+                          product_id: product.id,
+                          nome: product.nome,
+                          preco: product.preco,
+                          imagem_url: product.imagem_url,
+                        });
+                        toast.success(product.nome + " adicionado!");
+                      }}
+                    >
+                      {" "}
+                      <Plus className="h-4 w-4" />{" "}
+                    </Button>{" "}
+                  </div>
+                ))}{" "}
+              {!isLoading && products.filter((product) => product.destaque).length === 0 && (
+                <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+                  {" "}
+                  Novas promoções serão anunciadas aqui. Volte em breve!{" "}
+                </p>
+              )}{" "}
+            </div>{" "}
+          </aside>{" "}
+        </div>{" "}
       </section>
       {/* Filtros */}
       <section className="mx-auto max-w-6xl px-4 pt-8">
