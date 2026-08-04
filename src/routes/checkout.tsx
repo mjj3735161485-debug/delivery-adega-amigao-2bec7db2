@@ -1,7 +1,18 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Calculator, CheckCircle2, Loader2, MapPin, RefreshCw, Store, Truck, Wallet, XCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Calculator,
+  CheckCircle2,
+  Loader2,
+  MapPin,
+  RefreshCw,
+  Store,
+  Truck,
+  Wallet,
+  XCircle,
+} from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
@@ -11,10 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@/components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { reverseGeocode } from "@/lib/geocode.functions";
@@ -25,7 +33,10 @@ import { CheckoutLocationMap } from "@/components/CheckoutLocationMap";
 
 const baseSchema = z.object({
   cliente_nome: z.string().trim().min(2, "Informe seu nome").max(80),
-  cliente_telefone: z.string().trim().refine((v) => onlyDigits(v).length >= 10, "Telefone inválido"),
+  cliente_telefone: z
+    .string()
+    .trim()
+    .refine((v) => onlyDigits(v).length >= 10, "Telefone inválido"),
   pagamento: z.enum(["Dinheiro", "Pix", "Cartão", "Misto"]),
   troco_para: z.string().optional(),
   valor_cartao: z.string().optional(),
@@ -49,7 +60,11 @@ export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
       { title: "Finalizar Pedido — Adega Amigão" },
-      { name: "description", content: "Confirme seus dados de entrega e forma de pagamento para receber suas bebidas geladas da Adega Amigão." },
+      {
+        name: "description",
+        content:
+          "Confirme seus dados de entrega e forma de pagamento para receber suas bebidas geladas da Adega Amigão.",
+      },
       { property: "og:title", content: "Finalizar Pedido — Adega Amigão" },
       { property: "og:description", content: "Checkout do delivery de bebidas da Adega Amigão." },
       { property: "og:url", content: "https://sip-n-serve-bot.lovable.app/checkout" },
@@ -80,13 +95,14 @@ function Checkout() {
     tipo_entrega: "entrega" as "entrega" | "retirada",
   });
   const isPickup = form.tipo_entrega === "retirada";
-  const [detected, setDetected] = useState<
-    | { id: string; bairro: string; taxa: number; lat?: number; lng?: number }
-    | null
-  >(null);
-  const [areaStatus, setAreaStatus] = useState<
-    "idle" | "ok" | "out_of_area" | "unknown"
-  >("idle");
+  const [detected, setDetected] = useState<{
+    id: string;
+    bairro: string;
+    taxa: number;
+    lat?: number;
+    lng?: number;
+  } | null>(null);
+  const [areaStatus, setAreaStatus] = useState<"idle" | "ok" | "out_of_area" | "unknown">("idle");
   const [outOfAreaName, setOutOfAreaName] = useState<string | null>(null);
   const [locationMeta, setLocationMeta] = useState<{
     accuracy: number;
@@ -102,19 +118,13 @@ function Checkout() {
   const { data: settings } = useQuery({
     queryKey: ["settings"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("store_settings")
-        .select("nome, whatsapp")
-        .single();
+      const { data, error } = await supabase.from("store_settings").select("nome, whatsapp").single();
       if (error) throw error;
       return data;
     },
   });
 
-  async function applyMatch(
-    name: string | null,
-    extras?: { lat?: number; lng?: number },
-  ) {
+  async function applyMatch(name: string | null, extras?: { lat?: number; lng?: number }) {
     const candidates = name ? [name] : [];
     let matched: { id: string; bairro: string; taxa: number } | null = null;
     if (candidates.length) {
@@ -183,7 +193,9 @@ function Checkout() {
         endereco: f.endereco || (p.endereco_padrao ?? ""),
       }));
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const { data: cashbackSaldo = 0 } = useQuery({
@@ -196,16 +208,13 @@ function Checkout() {
     },
   });
 
-  const taxa = isPickup ? 0 : (detected ? Number(detected.taxa) : 0);
+  const taxa = isPickup ? 0 : detected ? Number(detected.taxa) : 0;
   const totalSemDesconto = subtotal + taxa;
   const parseMoneyLocal = (s: string) => {
     const n = Number((s || "0").replace(/\./g, "").replace(",", "."));
     return isFinite(n) ? n : 0;
   };
-  const cashbackPedido = Math.max(
-    0,
-    Math.min(parseMoneyLocal(cashbackInput), cashbackSaldo, subtotal),
-  );
+  const cashbackPedido = Math.max(0, Math.min(parseMoneyLocal(cashbackInput), cashbackSaldo, subtotal));
   const total = Math.max(0, totalSemDesconto - cashbackPedido);
 
   function focusEndereco() {
@@ -315,14 +324,10 @@ function Checkout() {
       }
       focusEndereco();
     } catch (err: unknown) {
-      const code =
-        err && typeof err === "object" && "code" in err
-          ? (err as GeolocationPositionError).code
-          : null;
+      const code = err && typeof err === "object" && "code" in err ? (err as GeolocationPositionError).code : null;
       if (code === 1) {
         toast.error("Permissão de localização negada.", {
-          description:
-            "Ative a localização nas configurações do navegador ou digite o endereço abaixo.",
+          description: "Ative a localização nas configurações do navegador ou digite o endereço abaixo.",
           duration: 8000,
         });
       } else if (code === 2) {
@@ -407,7 +412,8 @@ function Checkout() {
       const pag = parsed.data.pagamento;
       const mistoMetodo = parsed.data.metodo_misto || "Cartão";
       const valorCartao = pag === "Misto" ? parseMoney(parsed.data.valor_cartao || "") : 0;
-      const valorDinheiro = pag === "Misto" ? Math.max(0, Number(total) - valorCartao) : (pag === "Dinheiro" ? Number(total) : 0);
+      const valorDinheiro =
+        pag === "Misto" ? Math.max(0, Number(total) - valorCartao) : pag === "Dinheiro" ? Number(total) : 0;
       if (pag === "Misto") {
         if (!(valorCartao > 0) || valorCartao >= Number(total)) {
           toast.error("Informe um valor no cartão menor que o total.");
@@ -415,9 +421,10 @@ function Checkout() {
           return;
         }
       }
-      const trocoPara = (pag === "Dinheiro" || (pag === "Misto" && valorDinheiro > 0)) && parsed.data.troco_para
-        ? parseMoney(parsed.data.troco_para)
-        : 0;
+      const trocoPara =
+        (pag === "Dinheiro" || (pag === "Misto" && valorDinheiro > 0)) && parsed.data.troco_para
+          ? parseMoney(parsed.data.troco_para)
+          : 0;
       const troco = trocoPara > 0 ? Math.max(0, trocoPara - valorDinheiro) : 0;
 
       // Detalhe do pagamento salvo no início das observações para admin/motoboy verem no cupom
@@ -441,7 +448,7 @@ function Checkout() {
           bairro_id: isPickup ? "" : (parsed.data as z.infer<typeof deliverySchema>).bairro_id,
           endereco: isPickup ? "" : (parsed.data as z.infer<typeof deliverySchema>).endereco,
           pagamento: pag,
-        metodo_misto: pag === "Misto" ? mistoMetodo : "",
+          metodo_misto: pag === "Misto" ? mistoMetodo : "",
           troco_para: trocoPara > 0 ? String(trocoPara) : "",
           observacoes: obsFinal,
           subtotal: String(subtotal),
@@ -483,18 +490,11 @@ function Checkout() {
               `${mistoMetodo === "Pix" ? "🅿️" : "💳"} ${mistoMetodo}: ${brl(valorCartao)}`,
               `💵 Dinheiro: ${brl(valorDinheiro)}${trocoPara > 0 ? ` — troco p/ ${brl(trocoPara)} = ${brl(troco)}` : ""}`,
             ]
-          : [
-              `💳 ${pag}${
-                pag === "Dinheiro" && trocoPara > 0
-                  ? ` — troco p/ ${brl(trocoPara)} = ${brl(troco)}`
-                  : ""
-              }`,
-            ]),
+          : [`💳 ${pag}${pag === "Dinheiro" && trocoPara > 0 ? ` — troco p/ ${brl(trocoPara)} = ${brl(troco)}` : ""}`]),
         ...(parsed.data.observacoes ? [`📝 ${parsed.data.observacoes}`] : []),
       ];
       const mensagem = linhas.join("\n");
       const wa = `https://wa.me/${settings?.whatsapp ?? ""}?text=${encodeURIComponent(mensagem)}`;
-      window.open(wa, "_blank");
 
       // Notifica a API de pedidos do WhatsApp (POST /pedido)
       let notified = false;
@@ -521,13 +521,17 @@ function Checkout() {
       }
 
       if (!notified) {
-        toast.error(
-          "Não conseguimos enviar seu pedido para a loja. Seu carrinho foi mantido — tente novamente em instantes.",
-        );
-        return;
+        // O pedido já foi criado no Supabase. Limpar o carrinho e seguir para
+        // o acompanhamento evita que uma nova tentativa crie um pedido duplicado.
+        toast.warning(`Pedido #${order.numero} registrado, mas o aviso automático falhou.`, {
+          description: "A loja ainda pode visualizar o pedido no painel. Não envie novamente.",
+          duration: 9000,
+        });
+      } else {
+        window.open(wa, "_blank");
+        toast.success(`Pedido #${order.numero} enviado com sucesso! 🎉`);
       }
 
-      toast.success(`Pedido #${order.numero} enviado com sucesso! 🎉`);
       clear();
       navigate({
         to: "/pedido/$numero",
@@ -548,9 +552,7 @@ function Checkout() {
         <SiteHeader />
         <div className="mx-auto max-w-md py-24 px-4 text-center">
           <h1 className="font-display text-2xl mb-2">Carrinho vazio</h1>
-          <p className="text-muted-foreground text-sm mb-6">
-            Adicione bebidas antes de finalizar.
-          </p>
+          <p className="text-muted-foreground text-sm mb-6">Adicione bebidas antes de finalizar.</p>
           <Button asChild>
             <Link to="/">Ver catálogo</Link>
           </Button>
@@ -563,7 +565,10 @@ function Checkout() {
     <div className="min-h-screen">
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-4 py-6">
-        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
+        >
           <ArrowLeft className="h-4 w-4" /> Continuar comprando
         </Link>
         <h1 className="font-display text-3xl mb-6">Finalizar pedido</h1>
@@ -607,157 +612,166 @@ function Checkout() {
             </div>
             <div>
               <Label htmlFor="nome">Nome *</Label>
-              <Input id="nome" value={form.cliente_nome}
-                onChange={(e) => setForm({ ...form, cliente_nome: e.target.value })} />
+              <Input
+                id="nome"
+                value={form.cliente_nome}
+                onChange={(e) => setForm({ ...form, cliente_nome: e.target.value })}
+              />
             </div>
             <div>
               <Label htmlFor="tel">WhatsApp *</Label>
-              <Input id="tel" inputMode="tel" placeholder="(11) 99999-9999"
+              <Input
+                id="tel"
+                inputMode="tel"
+                placeholder="(11) 99999-9999"
                 value={form.cliente_telefone}
-                onChange={(e) => setForm({ ...form, cliente_telefone: formatPhoneBR(e.target.value) })} />
+                onChange={(e) => setForm({ ...form, cliente_telefone: formatPhoneBR(e.target.value) })}
+              />
             </div>
             {!isPickup && (
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <Label htmlFor="end">Endereço de entrega *</Label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleUseLocation}
-                  disabled={locating}
-                  className="h-7 px-2 text-xs text-primary hover:text-primary"
-                >
-                  {locating ? (
-                    <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                  ) : (
-                    <MapPin className="h-3.5 w-3.5 mr-1" />
-                  )}
-                  Usar minha localização
-                </Button>
-              </div>
-              <Textarea id="end" rows={3} placeholder="Rua, número, complemento, bairro"
-                value={form.endereco}
-                onChange={(e) => {
-                  setForm({ ...form, endereco: e.target.value });
-                  setPontoConfirmado(false);
-                  if (areaStatus !== "idle") {
-                    setDetected(null);
-                    setAreaStatus("idle");
-                    setLocationMeta(null);
-                    setForm((f) => ({ ...f, bairro_id: "" }));
-                    setPinPos(null);
-                  }
-                }} />
-              <div className="mt-2 flex items-center justify-between gap-2">
-                <p className="text-[11px] text-muted-foreground" aria-live="polite">
-                  Toque em <b>Usar minha localização</b> para calcular a taxa automaticamente.
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCalcTaxa}
-                  disabled={calculating || locating}
-                  className="h-7 px-2 text-xs shrink-0"
-                >
-                  {calculating ? (
-                    <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                  ) : (
-                    <Calculator className="h-3.5 w-3.5 mr-1" />
-                  )}
-                  Calcular taxa
-                </Button>
-              </div>
-              {areaStatus === "ok" && detected && (
-                <div className="mt-2 space-y-1">
-                  <div className="flex items-center gap-2 text-xs text-emerald-500">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Entregamos em <b>{detected.bairro}</b> — taxa {brl(detected.taxa)}.
-                  </div>
-                  {locationMeta && (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-[11px] text-muted-foreground">
-                        GPS inicial: ±{Math.round(locationMeta.accuracy)}m · {" "}
-                        {locationMeta.updatedAt.toLocaleTimeString("pt-BR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          second: "2-digit",
-                        })}
-                      </p>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleUseLocation}
-                        disabled={locating}
-                        className="h-6 px-2 text-[11px] text-primary hover:text-primary"
-                      >
-                        {locating ? (
-                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                        ) : (
-                          <RefreshCw className="h-3 w-3 mr-1" />
-                        )}
-                        {locating ? "Atualizando…" : "Reposicionar pelo GPS"}
-                      </Button>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <Label htmlFor="end">Endereço de entrega *</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleUseLocation}
+                    disabled={locating}
+                    className="h-7 px-2 text-xs text-primary hover:text-primary"
+                  >
+                    {locating ? (
+                      <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                    ) : (
+                      <MapPin className="h-3.5 w-3.5 mr-1" />
+                    )}
+                    Usar minha localização
+                  </Button>
+                </div>
+                <Textarea
+                  id="end"
+                  rows={3}
+                  placeholder="Rua, número, complemento, bairro"
+                  value={form.endereco}
+                  onChange={(e) => {
+                    setForm({ ...form, endereco: e.target.value });
+                    setPontoConfirmado(false);
+                    if (areaStatus !== "idle") {
+                      setDetected(null);
+                      setAreaStatus("idle");
+                      setLocationMeta(null);
+                      setForm((f) => ({ ...f, bairro_id: "" }));
+                      setPinPos(null);
+                    }
+                  }}
+                />
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <p className="text-[11px] text-muted-foreground" aria-live="polite">
+                    Toque em <b>Usar minha localização</b> para calcular a taxa automaticamente.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCalcTaxa}
+                    disabled={calculating || locating}
+                    className="h-7 px-2 text-xs shrink-0"
+                  >
+                    {calculating ? (
+                      <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                    ) : (
+                      <Calculator className="h-3.5 w-3.5 mr-1" />
+                    )}
+                    Calcular taxa
+                  </Button>
+                </div>
+                {areaStatus === "ok" && detected && (
+                  <div className="mt-2 space-y-1">
+                    <div className="flex items-center gap-2 text-xs text-emerald-500">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Entregamos em <b>{detected.bairro}</b> — taxa {brl(detected.taxa)}.
                     </div>
-                  )}
-                  {pinPos && (
-                    <>
-                      <p className="text-[11px] text-amber-400 mt-2">
-                        <b>Arraste o pino</b> até a porta de casa para precisão exata. Toque no mapa também move o pino.
-                      </p>
-                      <CheckoutLocationMap
-                        lat={pinPos.lat}
-                        lng={pinPos.lng}
-                        onChange={handlePinChange}
-                      />
-                      <div className="flex items-center justify-between gap-2 mt-2">
+                    {locationMeta && (
+                      <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-[11px] text-muted-foreground">
-                          {pontoConfirmado
-                            ? "✓ Ponto confirmado. Você pode finalizar o pedido."
-                            : "Confirme o ponto após ajustar o pino."}
+                          GPS inicial: ±{Math.round(locationMeta.accuracy)}m ·{" "}
+                          {locationMeta.updatedAt.toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          })}
                         </p>
                         <Button
                           type="button"
+                          variant="ghost"
                           size="sm"
-                          variant={pontoConfirmado ? "secondary" : "default"}
-                          onClick={() => {
-                            setPontoConfirmado(true);
-                            toast.success("Ponto de entrega confirmado.");
-                          }}
-                          className="h-7 px-2 text-xs shrink-0"
+                          onClick={handleUseLocation}
+                          disabled={locating}
+                          className="h-6 px-2 text-[11px] text-primary hover:text-primary"
                         >
-                          {pontoConfirmado ? (
-                            <>
-                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Ponto confirmado
-                            </>
+                          {locating ? (
+                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                           ) : (
-                            <>✓ Confirmar este ponto</>
+                            <RefreshCw className="h-3 w-3 mr-1" />
                           )}
+                          {locating ? "Atualizando…" : "Reposicionar pelo GPS"}
                         </Button>
                       </div>
-                    </>
-                  )}
-                </div>
-              )}
-              {areaStatus === "out_of_area" && (
-                <div className="mt-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs">
-                  <div className="flex items-center gap-2 text-destructive font-medium">
-                    <XCircle className="h-4 w-4" />
-                    Ainda não entregamos em {outOfAreaName ?? "seu bairro"}.
+                    )}
+                    {pinPos && (
+                      <>
+                        <p className="text-[11px] text-amber-400 mt-2">
+                          <b>Arraste o pino</b> até a porta de casa para precisão exata. Toque no mapa também move o
+                          pino.
+                        </p>
+                        <CheckoutLocationMap lat={pinPos.lat} lng={pinPos.lng} onChange={handlePinChange} />
+                        <div className="flex items-center justify-between gap-2 mt-2">
+                          <p className="text-[11px] text-muted-foreground">
+                            {pontoConfirmado
+                              ? "✓ Ponto confirmado. Você pode finalizar o pedido."
+                              : "Confirme o ponto após ajustar o pino."}
+                          </p>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={pontoConfirmado ? "secondary" : "default"}
+                            onClick={() => {
+                              setPontoConfirmado(true);
+                              toast.success("Ponto de entrega confirmado.");
+                            }}
+                            className="h-7 px-2 text-xs shrink-0"
+                          >
+                            {pontoConfirmado ? (
+                              <>
+                                <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Ponto confirmado
+                              </>
+                            ) : (
+                              <>✓ Confirmar este ponto</>
+                            )}
+                          </Button>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  <p className="mt-1 text-muted-foreground">
-                    Fale com a loja no WhatsApp para confirmar se sua região é atendida.
+                )}
+                {areaStatus === "out_of_area" && (
+                  <div className="mt-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs">
+                    <div className="flex items-center gap-2 text-destructive font-medium">
+                      <XCircle className="h-4 w-4" />
+                      Ainda não entregamos em {outOfAreaName ?? "seu bairro"}.
+                    </div>
+                    <p className="mt-1 text-muted-foreground">
+                      Fale com a loja no WhatsApp para confirmar se sua região é atendida.
+                    </p>
+                  </div>
+                )}
+                {areaStatus === "unknown" && (
+                  <p className="mt-2 text-xs text-amber-500">
+                    Não conseguimos identificar seu bairro. Inclua o nome do bairro no endereço e toque em{" "}
+                    <b>Calcular taxa</b>.
                   </p>
-                </div>
-              )}
-              {areaStatus === "unknown" && (
-                <p className="mt-2 text-xs text-amber-500">
-                  Não conseguimos identificar seu bairro. Inclua o nome do bairro no endereço e toque em <b>Calcular taxa</b>.
-                </p>
-              )}
-            </div>
+                )}
+              </div>
             )}
             <div>
               <Label>Pagamento na entrega *</Label>
@@ -767,13 +781,14 @@ function Checkout() {
                 className="grid grid-cols-2 gap-2 mt-2"
               >
                 {(["Dinheiro", "Pix", "Cartão", "Misto"] as const).map((p) => (
-                  <Label key={p} className="flex items-center gap-2 border border-border rounded-md p-3 cursor-pointer hover:border-primary/50">
+                  <Label
+                    key={p}
+                    className="flex items-center gap-2 border border-border rounded-md p-3 cursor-pointer hover:border-primary/50"
+                  >
                     <RadioGroupItem value={p} />
                     <div className="flex flex-col">
                       <span>{p}</span>
-                      {p === "Cartão" && (
-                        <span className="text-[10px] text-muted-foreground">Débito ou crédito</span>
-                      )}
+                      {p === "Cartão" && <span className="text-[10px] text-muted-foreground">Débito ou crédito</span>}
                       {p === "Misto" && (
                         <span className="text-[10px] text-muted-foreground">Cartão/Pix + dinheiro</span>
                       )}
@@ -782,80 +797,99 @@ function Checkout() {
                 ))}
               </RadioGroup>
             </div>
-            {form.pagamento === "Misto" && (() => {
-              const parseMoney = (s: string) => Number((s || "0").replace(/\./g, "").replace(",", "."));
-              const vCartao = parseMoney(form.valor_cartao);
-              const vDinheiro = Math.max(0, Number(total) - (isNaN(vCartao) ? 0 : vCartao));
-              const vTrocoPara = parseMoney(form.troco_para);
-              const vTroco = vTrocoPara > 0 ? Math.max(0, vTrocoPara - vDinheiro) : 0;
-              return (
-                <div className="space-y-3 rounded-md border border-primary/30 bg-primary/5 p-3">
-                  <div>
-                    <Label>Parte não-dinheiro *</Label>
-                    <div className="grid grid-cols-2 gap-2 mt-1">
-                      {(["Cartão", "Pix"] as const).map((m) => (
-                        <button
-                          key={m}
-                          type="button"
-                          onClick={() => setForm({ ...form, metodo_misto: m })}
-                          className={`border rounded-md p-2 text-sm transition ${
-                            form.metodo_misto === m
-                              ? "border-primary bg-primary/10"
-                              : "border-border hover:border-primary/50"
-                          }`}
-                        >
-                          {m}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="vcartao">Valor no {form.metodo_misto} *</Label>
-                    <Input id="vcartao" inputMode="decimal" placeholder="Ex: 130"
-                      value={form.valor_cartao}
-                      onChange={(e) => setForm({ ...form, valor_cartao: e.target.value })} />
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Total do pedido: <b className="text-foreground">{brl(total)}</b> · Restante em dinheiro: <b className="text-emerald-400">{brl(vDinheiro)}</b>
-                  </div>
-                  {vDinheiro > 0 && (
+            {form.pagamento === "Misto" &&
+              (() => {
+                const parseMoney = (s: string) => Number((s || "0").replace(/\./g, "").replace(",", "."));
+                const vCartao = parseMoney(form.valor_cartao);
+                const vDinheiro = Math.max(0, Number(total) - (isNaN(vCartao) ? 0 : vCartao));
+                const vTrocoPara = parseMoney(form.troco_para);
+                const vTroco = vTrocoPara > 0 ? Math.max(0, vTrocoPara - vDinheiro) : 0;
+                return (
+                  <div className="space-y-3 rounded-md border border-primary/30 bg-primary/5 p-3">
                     <div>
-                      <Label htmlFor="troco">Troco para (opcional)</Label>
-                      <Input id="troco" inputMode="decimal" placeholder={`Ex: ${Math.ceil(vDinheiro / 10) * 10}`}
-                        value={form.troco_para}
-                        onChange={(e) => setForm({ ...form, troco_para: e.target.value })} />
-                      {vTrocoPara > 0 && vTrocoPara >= vDinheiro && (
-                        <p className="mt-1 text-xs text-emerald-400">
-                          Troco automático: <b>{brl(vTroco)}</b>
-                        </p>
-                      )}
+                      <Label>Parte não-dinheiro *</Label>
+                      <div className="grid grid-cols-2 gap-2 mt-1">
+                        {(["Cartão", "Pix"] as const).map((m) => (
+                          <button
+                            key={m}
+                            type="button"
+                            onClick={() => setForm({ ...form, metodo_misto: m })}
+                            className={`border rounded-md p-2 text-sm transition ${
+                              form.metodo_misto === m
+                                ? "border-primary bg-primary/10"
+                                : "border-border hover:border-primary/50"
+                            }`}
+                          >
+                            {m}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  )}
-                </div>
-              );
-            })()}
-            {form.pagamento === "Dinheiro" && (() => {
-              const parseMoney = (s: string) => Number((s || "0").replace(/\./g, "").replace(",", "."));
-              const vTrocoPara = parseMoney(form.troco_para);
-              const vTroco = vTrocoPara > 0 ? Math.max(0, vTrocoPara - Number(total)) : 0;
-              return (
-              <div>
-                <Label htmlFor="troco">Troco para (opcional)</Label>
-                <Input id="troco" inputMode="decimal" placeholder="Ex: 100"
-                  value={form.troco_para}
-                  onChange={(e) => setForm({ ...form, troco_para: e.target.value })} />
-                  {vTrocoPara > 0 && vTrocoPara >= Number(total) && (
-                    <p className="mt-1 text-xs text-emerald-400">
-                      Troco automático: <b>{brl(vTroco)}</b>
-                    </p>
-                  )}
-              </div>
-              );
-            })()}
+                    <div>
+                      <Label htmlFor="vcartao">Valor no {form.metodo_misto} *</Label>
+                      <Input
+                        id="vcartao"
+                        inputMode="decimal"
+                        placeholder="Ex: 130"
+                        value={form.valor_cartao}
+                        onChange={(e) => setForm({ ...form, valor_cartao: e.target.value })}
+                      />
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Total do pedido: <b className="text-foreground">{brl(total)}</b> · Restante em dinheiro:{" "}
+                      <b className="text-emerald-400">{brl(vDinheiro)}</b>
+                    </div>
+                    {vDinheiro > 0 && (
+                      <div>
+                        <Label htmlFor="troco">Troco para (opcional)</Label>
+                        <Input
+                          id="troco"
+                          inputMode="decimal"
+                          placeholder={`Ex: ${Math.ceil(vDinheiro / 10) * 10}`}
+                          value={form.troco_para}
+                          onChange={(e) => setForm({ ...form, troco_para: e.target.value })}
+                        />
+                        {vTrocoPara > 0 && vTrocoPara >= vDinheiro && (
+                          <p className="mt-1 text-xs text-emerald-400">
+                            Troco automático: <b>{brl(vTroco)}</b>
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            {form.pagamento === "Dinheiro" &&
+              (() => {
+                const parseMoney = (s: string) => Number((s || "0").replace(/\./g, "").replace(",", "."));
+                const vTrocoPara = parseMoney(form.troco_para);
+                const vTroco = vTrocoPara > 0 ? Math.max(0, vTrocoPara - Number(total)) : 0;
+                return (
+                  <div>
+                    <Label htmlFor="troco">Troco para (opcional)</Label>
+                    <Input
+                      id="troco"
+                      inputMode="decimal"
+                      placeholder="Ex: 100"
+                      value={form.troco_para}
+                      onChange={(e) => setForm({ ...form, troco_para: e.target.value })}
+                    />
+                    {vTrocoPara > 0 && vTrocoPara >= Number(total) && (
+                      <p className="mt-1 text-xs text-emerald-400">
+                        Troco automático: <b>{brl(vTroco)}</b>
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
             <div>
               <Label htmlFor="obs">Observações</Label>
-              <Textarea id="obs" rows={2} value={form.observacoes}
-                onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
+              <Textarea
+                id="obs"
+                rows={2}
+                value={form.observacoes}
+                onChange={(e) => setForm({ ...form, observacoes: e.target.value })}
+              />
             </div>
             {userId && cashbackSaldo > 0 && (
               <div className="rounded-md border border-emerald-500/40 bg-emerald-500/5 p-3 space-y-2">
@@ -875,13 +909,7 @@ function Checkout() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      setCashbackInput(
-                        Math.min(cashbackSaldo, subtotal)
-                          .toFixed(2)
-                          .replace(".", ","),
-                      )
-                    }
+                    onClick={() => setCashbackInput(Math.min(cashbackSaldo, subtotal).toFixed(2).replace(".", ","))}
                   >
                     Usar tudo
                   </Button>
@@ -893,12 +921,22 @@ function Checkout() {
                 </div>
                 {parseMoneyLocal(cashbackInput) > 0 && cashbackPedido < parseMoneyLocal(cashbackInput) && (
                   <p className="text-[11px] text-amber-400">
-                    Ajustado para {brl(cashbackPedido)} — limitado ao saldo e ao subtotal (não desconta a taxa de entrega).
+                    Ajustado para {brl(cashbackPedido)} — limitado ao saldo e ao subtotal (não desconta a taxa de
+                    entrega).
                   </p>
                 )}
                 {cashbackPedido >= subtotal && subtotal > 0 && (
                   <p className="text-[11px] text-emerald-300">
-                    Seu cashback cobre os produtos! {taxa > 0 ? <>Você paga só a taxa de entrega: <b>{brl(taxa)}</b>.</> : <>Total: <b>{brl(0)}</b>.</>}
+                    Seu cashback cobre os produtos!{" "}
+                    {taxa > 0 ? (
+                      <>
+                        Você paga só a taxa de entrega: <b>{brl(taxa)}</b>.
+                      </>
+                    ) : (
+                      <>
+                        Total: <b>{brl(0)}</b>.
+                      </>
+                    )}
                   </p>
                 )}
               </div>
@@ -910,19 +948,20 @@ function Checkout() {
             <div className="space-y-2 text-sm max-h-64 overflow-y-auto">
               {items.map((i) => (
                 <div key={i.id} className="flex justify-between gap-2">
-                  <span className="text-muted-foreground">{i.quantidade}× {i.nome}</span>
+                  <span className="text-muted-foreground">
+                    {i.quantidade}× {i.nome}
+                  </span>
                   <span>{brl(i.preco * i.quantidade)}</span>
                 </div>
               ))}
             </div>
             <div className="border-t border-border pt-3 text-sm space-y-1">
-              <div className="flex justify-between"><span>Subtotal</span><span>{brl(subtotal)}</span></div>
               <div className="flex justify-between">
-                <span>
-                  {isPickup
-                    ? "🏪 Retirada na loja"
-                    : `Entrega ${detected ? `(${detected.bairro})` : ""}`}
-                </span>
+                <span>Subtotal</span>
+                <span>{brl(subtotal)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>{isPickup ? "🏪 Retirada na loja" : `Entrega ${detected ? `(${detected.bairro})` : ""}`}</span>
                 <span>{isPickup ? "grátis" : detected ? brl(taxa) : "—"}</span>
               </div>
               {cashbackPedido > 0 && (
@@ -931,9 +970,17 @@ function Checkout() {
                   <span>−{brl(cashbackPedido)}</span>
                 </div>
               )}
-              <div className="flex justify-between font-bold text-base pt-1"><span>Total</span><span className="text-primary">{brl(total)}</span></div>
+              <div className="flex justify-between font-bold text-base pt-1">
+                <span>Total</span>
+                <span className="text-primary">{brl(total)}</span>
+              </div>
             </div>
-            <Button type="submit" size="lg" className="w-full" disabled={submitting || lojaFechada || (!isPickup && (!form.bairro_id || !pontoConfirmado))}>
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={submitting || lojaFechada || (!isPickup && (!form.bairro_id || !pontoConfirmado))}
+            >
               {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {lojaFechada
                 ? "Loja fechada"
@@ -947,11 +994,13 @@ function Checkout() {
             </Button>
             {lojaFechada && (
               <p className="text-xs text-amber-500 text-center">
-                Estamos fechados no momento. {storeOpen.data?.proximo ? `Reabrimos ${formatProximo(storeOpen.data.proximo)}.` : ""} Seu carrinho fica salvo.
+                Estamos fechados no momento.{" "}
+                {storeOpen.data?.proximo ? `Reabrimos ${formatProximo(storeOpen.data.proximo)}.` : ""} Seu carrinho fica
+                salvo.
               </p>
             )}
             <p className="text-[11px] text-muted-foreground text-center">
-              O pedido abre no WhatsApp da loja para confirmação.
+              O pedido é registrado na loja e, após confirmação, o WhatsApp é aberto como comprovante.
             </p>
           </aside>
         </form>
