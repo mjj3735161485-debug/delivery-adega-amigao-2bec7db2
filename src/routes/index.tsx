@@ -213,6 +213,8 @@ function Home() {
           alt=""
           width={1600}
           height={900}
+          decoding="async"
+          fetchPriority="high"
           className="absolute inset-0 h-full w-full object-cover opacity-45"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/70 to-background" />
