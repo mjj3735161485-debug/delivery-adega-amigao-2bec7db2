@@ -92,6 +92,7 @@ function AdminProdutos() {
   const [bulkQtd, setBulkQtd] = useState("");
   const [bulkMotivo, setBulkMotivo] = useState("");
   const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [histOpen, setHistOpen] = useState(false);
   const [histProduct, setHistProduct] = useState<Product | null>(null);
   const [showLowOnly, setShowLowOnly] = useState(false);
@@ -264,6 +265,27 @@ function AdminProdutos() {
   }
 
   function openHistory(p: Product) {
+
+  async function removeSelected() {
+    if (selected.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      const ids = Array.from(selected);
+      const { error } = await supabase.from("products").delete().in("id", ids);
+      if (error) throw error;
+      toast.success(`${ids.length} produto(s) excluídos`);
+      setSelected(new Set());
+      qc.invalidateQueries({ queryKey: ["admin", "products"] });
+      qc.invalidateQueries({ queryKey: ["admin", "low-stock"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha ao excluir");
+    } finally {
+      setBulkDeleting(false);
+    }
+  }
+
+  function openHistoryFn(p: Product) {
     setHistProduct(p);
     setHistOpen(true);
   }
