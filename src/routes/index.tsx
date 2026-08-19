@@ -249,10 +249,7 @@ function Home() {
             </div>{" "}
             <div className="space-y-3">
               {" "}
-              {products
-                .filter((product) => product.destaque)
-                .slice(0, 2)
-                .map((product) => (
+              {promos.map((product) => (
                   <div
                     key={product.id}
                     className="flex items-center gap-3 rounded-xl border border-border bg-background/80 p-3"
@@ -292,7 +289,7 @@ function Home() {
                     </Button>{" "}
                   </div>
                 ))}{" "}
-              {!isLoading && products.filter((product) => product.destaque).length === 0 && (
+              {!isLoading && promos.length === 0 && (
                 <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
                   {" "}
                   Novas promoções serão anunciadas aqui. Volte em breve!{" "}
@@ -306,7 +303,6 @@ function Home() {
                 setOnlyPromos(true);
                 setCat("todos");
                 setQ("");
-                setVisibleCount(48);
                 setTimeout(() => document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" }), 0);
               }}
             >
@@ -327,7 +323,6 @@ function Home() {
               onChange={(e) => {
                 setQ(e.target.value);
                 setOnlyPromos(false);
-                setVisibleCount(48);
               }}
               className="pl-9"
             />
@@ -340,7 +335,6 @@ function Home() {
               onClick={() => {
                 setCat(c.slug);
                 setOnlyPromos(false);
-                setVisibleCount(48);
               }}
               className={`shrink-0 rounded-full px-4 py-1.5 text-sm border transition ${
                 cat === c.slug
@@ -365,7 +359,7 @@ function Home() {
           <p className="py-16 text-center text-muted-foreground">Nenhum produto encontrado.</p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.slice(0, visibleCount).map((p) => (
+            {filtered.map((p) => (
               <article
                 key={p.id}
                 className="group rounded-xl bg-card border border-border overflow-hidden flex flex-col hover:border-primary/50 transition"
@@ -407,12 +401,12 @@ function Home() {
           </div>
         )}
       </section>
-      {!isLoading && visibleCount < filtered.length && (
+      {!isLoading && hasNextPage && (
         <div className="mx-auto max-w-6xl px-4 pb-8 flex justify-center">
           {" "}
-          <Button variant="outline" onClick={() => setVisibleCount((count) => count + 48)}>
+          <Button variant="outline" disabled={isFetchingNextPage} onClick={() => void fetchNextPage()}>
             {" "}
-            Carregar mais produtos{" "}
+            {isFetchingNextPage ? "Carregando..." : "Carregar mais produtos"}{" "}
           </Button>{" "}
         </div>
       )}{" "}
