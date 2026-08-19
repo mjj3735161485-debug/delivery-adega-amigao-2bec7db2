@@ -319,7 +319,20 @@ function AdminProdutos() {
         )}
 
         <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center mb-4">
-          <p className="text-sm text-muted-foreground">{filtered.length} de {products.length} produtos</p>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-primary"
+                checked={filtered.length > 0 && filtered.every((p) => selected.has(p.id))}
+                onChange={(e) =>
+                  setSelected(e.target.checked ? new Set(filtered.map((p) => p.id)) : new Set())
+                }
+              />
+              Selecionar todos
+            </label>
+            <p className="text-sm text-muted-foreground">{filtered.length} de {products.length} produtos</p>
+          </div>
           <div className="flex gap-2 w-full sm:w-auto">
             <Input
               placeholder="Buscar produto..."
@@ -328,9 +341,15 @@ function AdminProdutos() {
               className="w-full sm:w-64"
             />
             {selected.size > 0 && (
-              <Button variant="secondary" onClick={() => setBulkOpen(true)}>
-                <PackagePlus className="h-4 w-4 mr-1" /> Estoque ({selected.size})
-              </Button>
+              <>
+                <Button variant="secondary" onClick={() => setBulkOpen(true)}>
+                  <PackagePlus className="h-4 w-4 mr-1" /> Estoque ({selected.size})
+                </Button>
+                <Button variant="destructive" onClick={removeSelected} disabled={bulkDeleting}>
+                  {bulkDeleting ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Trash2 className="h-4 w-4 mr-1" />}
+                  Excluir ({selected.size})
+                </Button>
+              </>
             )}
             <Button onClick={novo}><Plus className="h-4 w-4 mr-1" /> Novo produto</Button>
           </div>
