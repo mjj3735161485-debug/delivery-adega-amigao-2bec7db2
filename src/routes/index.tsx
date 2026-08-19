@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Plus, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -18,10 +18,8 @@ type Product = {
   id: string;
   category_id: string | null;
   nome: string;
-  descricao: string | null;
   preco: number;
   imagem_url: string | null;
-  disponivel: boolean;
   destaque: boolean;
 };
 type Settings = {
@@ -30,6 +28,10 @@ type Settings = {
   horario: string;
   ativo: boolean;
 };
+
+const PRODUCT_COLUMNS = "id, category_id, nome, preco, imagem_url, destaque";
+const PAGE_SIZE = 24;
+const HOUR = 1000 * 60 * 60;
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -70,7 +72,6 @@ export const Route = createFileRoute("/")({
 function Home() {
   const [cat, setCat] = useState<string>("todos");
   const [q, setQ] = useState("");
-  const [visibleCount, setVisibleCount] = useState(48);
   const [onlyPromos, setOnlyPromos] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState<boolean | null>(null);
   useEffect(() => {
@@ -78,27 +79,77 @@ function Home() {
   }, []);
   const { add } = useCart();
 
+  // Busca com debounce para não disparar uma consulta a cada tecla no celular
+  const [debouncedQ, setDebouncedQ] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(q.trim()), 350);
+    return () => clearTimeout(t);
+  }, [q]);
+
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("categories").select("*").order("ordem");
+      const { data, error } = await supabase.from("categories").select("id, nome, slug, ordem").order("ordem");
       if (error) throw error;
       return data as Category[];
     },
+    staleTime: HOUR,
+    gcTime: HOUR,
   });
 
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ["products"],
+  const activeCategoryId = useMemo(() => {
+    if (cat === "todos") return null;
+    return categories.find((c) => c.slug === cat)?.id ?? null;
+  }, [cat, categories]);
+
+  // Catálogo paginado no servidor: carrega poucos itens por vez (rápido no 4G)
+  const {
+    data: pages,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["products", cat, debouncedQ, onlyPromos],
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      let query = supabase
+        .from("products")
+        .select(PRODUCT_COLUMNS)
+        .eq("disponivel", true)
+        .order("destaque", { ascending: false })
+        .order("ordem")
+        .range(pageParam * PAGE_SIZE, pageParam * PAGE_SIZE + PAGE_SIZE - 1);
+
+      if (onlyPromos) query = query.eq("destaque", true);
+      if (activeCategoryId) query = query.eq("category_id", activeCategoryId);
+      if (debouncedQ) query = query.ilike("nome", `%${debouncedQ}%`);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data ?? []) as Product[];
+    },
+    getNextPageParam: (lastPage, all) => (lastPage.length < PAGE_SIZE ? undefined : all.length),
+    enabled: cat === "todos" || activeCategoryId !== null,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const filtered = useMemo(() => (pages?.pages ?? []).flat(), [pages]);
+
+  const { data: promos = [] } = useQuery({
+    queryKey: ["products", "destaques"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select(PRODUCT_COLUMNS)
         .eq("disponivel", true)
-        .order("destaque", { ascending: false })
-        .order("ordem");
+        .eq("destaque", true)
+        .order("ordem")
+        .limit(2);
       if (error) throw error;
-      return data as Product[];
+      return (data ?? []) as Product[];
     },
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: settings } = useQuery({
@@ -111,6 +162,7 @@ function Home() {
       if (error) throw error;
       return data as Settings;
     },
+    staleTime: HOUR,
   });
 
   const { data: minTaxa } = useQuery({
@@ -120,26 +172,8 @@ function Home() {
       if (error) throw error;
       return data == null ? undefined : Number(data);
     },
+    staleTime: HOUR,
   });
-
-  const filtered = useMemo(() => {
-    return products.filter((p) => {
-      if (onlyPromos && !p.destaque) return false;
-      if (cat !== "todos" && p.category_id) {
-        const c = categories.find((x) => x.id === p.category_id);
-        if (!c || c.slug !== cat) return false;
-      }
-      if (q.trim()) {
-        const normalize = (value: string) =>
-          value
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .toLowerCase();
-        if (!normalize(p.nome).includes(normalize(q.trim()))) return false;
-      }
-      return true;
-    });
-  }, [products, categories, cat, q, onlyPromos]);
 
   return (
     <div className="min-h-screen">
@@ -179,6 +213,8 @@ function Home() {
           alt=""
           width={1600}
           height={900}
+          decoding="async"
+          fetchPriority="high"
           className="absolute inset-0 h-full w-full object-cover opacity-45"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/70 to-background" />
@@ -215,10 +251,7 @@ function Home() {
             </div>{" "}
             <div className="space-y-3">
               {" "}
-              {products
-                .filter((product) => product.destaque)
-                .slice(0, 2)
-                .map((product) => (
+              {promos.map((product) => (
                   <div
                     key={product.id}
                     className="flex items-center gap-3 rounded-xl border border-border bg-background/80 p-3"
@@ -258,7 +291,7 @@ function Home() {
                     </Button>{" "}
                   </div>
                 ))}{" "}
-              {!isLoading && products.filter((product) => product.destaque).length === 0 && (
+              {!isLoading && promos.length === 0 && (
                 <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
                   {" "}
                   Novas promoções serão anunciadas aqui. Volte em breve!{" "}
@@ -272,7 +305,6 @@ function Home() {
                 setOnlyPromos(true);
                 setCat("todos");
                 setQ("");
-                setVisibleCount(48);
                 setTimeout(() => document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" }), 0);
               }}
             >
@@ -293,7 +325,6 @@ function Home() {
               onChange={(e) => {
                 setQ(e.target.value);
                 setOnlyPromos(false);
-                setVisibleCount(48);
               }}
               className="pl-9"
             />
@@ -306,7 +337,6 @@ function Home() {
               onClick={() => {
                 setCat(c.slug);
                 setOnlyPromos(false);
-                setVisibleCount(48);
               }}
               className={`shrink-0 rounded-full px-4 py-1.5 text-sm border transition ${
                 cat === c.slug
@@ -331,7 +361,7 @@ function Home() {
           <p className="py-16 text-center text-muted-foreground">Nenhum produto encontrado.</p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.slice(0, visibleCount).map((p) => (
+            {filtered.map((p) => (
               <article
                 key={p.id}
                 className="group rounded-xl bg-card border border-border overflow-hidden flex flex-col hover:border-primary/50 transition"
@@ -373,12 +403,12 @@ function Home() {
           </div>
         )}
       </section>
-      {!isLoading && visibleCount < filtered.length && (
+      {!isLoading && hasNextPage && (
         <div className="mx-auto max-w-6xl px-4 pb-8 flex justify-center">
           {" "}
-          <Button variant="outline" onClick={() => setVisibleCount((count) => count + 48)}>
+          <Button variant="outline" disabled={isFetchingNextPage} onClick={() => void fetchNextPage()}>
             {" "}
-            Carregar mais produtos{" "}
+            {isFetchingNextPage ? "Carregando..." : "Carregar mais produtos"}{" "}
           </Button>{" "}
         </div>
       )}{" "}
