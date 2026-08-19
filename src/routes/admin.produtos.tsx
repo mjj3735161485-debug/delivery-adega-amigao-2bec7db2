@@ -264,8 +264,6 @@ function AdminProdutos() {
     }
   }
 
-  function openHistory(p: Product) {
-
   async function removeSelected() {
     if (selected.size === 0) return;
     setBulkDeleting(true);
@@ -285,7 +283,7 @@ function AdminProdutos() {
     }
   }
 
-  function openHistoryFn(p: Product) {
+  function openHistory(p: Product) {
     setHistProduct(p);
     setHistOpen(true);
   }
