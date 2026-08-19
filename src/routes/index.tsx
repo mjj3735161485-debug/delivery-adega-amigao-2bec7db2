@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Plus, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -18,10 +18,8 @@ type Product = {
   id: string;
   category_id: string | null;
   nome: string;
-  descricao: string | null;
   preco: number;
   imagem_url: string | null;
-  disponivel: boolean;
   destaque: boolean;
 };
 type Settings = {
@@ -30,6 +28,10 @@ type Settings = {
   horario: string;
   ativo: boolean;
 };
+
+const PRODUCT_COLUMNS = "id, category_id, nome, preco, imagem_url, destaque";
+const PAGE_SIZE = 24;
+const HOUR = 1000 * 60 * 60;
 
 export const Route = createFileRoute("/")({
   component: Home,
